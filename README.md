@@ -50,7 +50,7 @@ Standard tools fail at this because they preserve the input color at the cost of
 
 ```bash
 # 1. Clone the repository
-git clone [https://github.com/yourusername/lightness-lock.git](https://github.com/yourusername/lightness-lock.git)
+git clone [https://github.com/SeanMeiser/BaseRamps)
 
 # 2. Open it in your favorite code editor
 
