@@ -48,22 +48,22 @@ const CURVE_PRESETS: CurvePreset[] = [
   {
     name: "Mid-Tone Focus",
     description: "Expands middle steps. Good for status colors.",
-    coordinates: { x1: 0.42, y1: 0.0, x2: 0.58, y2: 1.0 }
+    coordinates: { x1: 0.15, y1: 0.9, x2: 0.85, y2: 0.1 }
   },
   {
     name: "Surface Focus",
     description: "Expands light/dark ends. Good for backgrounds & text.",
-    coordinates: { x1: 0.15, y1: 0.9, x2: 0.85, y2: 0.1 }
+    coordinates: { x1: 0.42, y1: 0.0, x2: 0.58, y2: 1.0 }
   },
   {
     name: "Shadow Focus",
     description: "More steps in the darks. Good for Dark Mode.",
-    coordinates: { x1: 0.42, y1: 0, x2: 1, y2: 1 }
+    coordinates: { x1: 0, y1: 0, x2: 0.58, y2: 1 }
   },
   {
     name: "Tint Focus",
     description: "More steps in the lights. Good for Light Mode.",
-    coordinates: { x1: 0, y1: 0, x2: 0.58, y2: 1 }
+    coordinates: { x1: 0.42, y1: 0, x2: 1, y2: 1 }
   }
 ];
 
@@ -580,53 +580,56 @@ function LightnessCurvePresets({ curve, onChange }: { curve: Curve; onChange: (c
     <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full" data-name="LightnessCurvePresets">
       <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[14px] xl:text-[17px] 2xl:text-[21.33px] text-nowrap">Lightness Curve</p>
 
-      {/* Dropdown Trigger */}
-      <div
-        className="content-stretch flex items-center justify-between relative shrink-0 w-full cursor-pointer"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <div aria-hidden="true" className="absolute border border-[#c4c4c4] border-solid inset-0 pointer-events-none" />
-        <div className="content-stretch flex flex-col items-start justify-center pb-[12px] pt-[8px] px-[16px] relative shrink-0 flex-1">
-          <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[14px] xl:text-[17px] 2xl:text-[21.33px]">{label}</p>
-        </div>
-        <div className="flex flex-row items-center self-stretch">
-          <div className="content-stretch flex h-full items-center relative shrink-0">
-            <div className="bg-[#c4c4c4] h-full shrink-0 w-px" />
-            <div className="content-stretch flex flex-col items-center justify-center overflow-clip px-[3.538px] py-[14.154px] relative shrink-0 size-[32px] xl:size-[40px] 2xl:size-[50px]">
-              <CaretDownLight />
+      {/* Position Wrapper */}
+      <div className="relative w-full">
+        {/* Dropdown Trigger */}
+        <div
+          className="content-stretch flex items-center justify-between relative shrink-0 w-full cursor-pointer"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <div aria-hidden="true" className="absolute border border-[#c4c4c4] border-solid inset-0 pointer-events-none" />
+          <div className="content-stretch flex flex-col items-start justify-center pb-[12px] pt-[8px] px-[16px] relative shrink-0 flex-1">
+            <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[14px] xl:text-[17px] 2xl:text-[21.33px]">{label}</p>
+          </div>
+          <div className="flex flex-row items-center self-stretch">
+            <div className="content-stretch flex h-full items-center relative shrink-0">
+              <div className="bg-[#c4c4c4] h-full shrink-0 w-px" />
+              <div className="content-stretch flex flex-col items-center justify-center overflow-clip px-[3.538px] py-[14.154px] relative shrink-0 size-[32px] xl:size-[40px] 2xl:size-[50px]">
+                <CaretDownLight />
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Dropdown Menu */}
-      {isOpen && (
-        <div className="absolute top-full left-0 right-0 z-50 bg-white border border-[#c4c4c4] mt-1 shadow-lg">
-          {CURVE_PRESETS.map((preset) => {
-            const isActive = curvesMatch(curve, preset.coordinates);
-            return (
-              <div
-                key={preset.name}
-                className={clsx(
-                  "px-[16px] py-[12px] cursor-pointer hover:bg-[#f5f5f5] border-b border-[#e6e6e6] last:border-b-0",
-                  isActive && "bg-[#f5f5f5]"
-                )}
-                onClick={(e: MouseEvent) => {
-                  e.stopPropagation();
-                  handlePresetClick(preset);
-                }}
-              >
-                <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[#18180f] text-[14px] xl:text-[17px] 2xl:text-[21.33px] font-medium">
-                  {preset.name}
-                </p>
-                <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[#7a7a7a] text-[11px] xl:text-[13px] 2xl:text-[16px] mt-[4px]">
-                  {preset.description}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-      )}
+        {/* Dropdown Menu */}
+        {isOpen && (
+          <div className="absolute top-full left-0 right-0 z-50 bg-white border border-[#c4c4c4] mt-1 shadow-lg">
+            {CURVE_PRESETS.map((preset) => {
+              const isActive = curvesMatch(curve, preset.coordinates);
+              return (
+                <div
+                  key={preset.name}
+                  className={clsx(
+                    "px-[16px] pt-[6px] pb-[8px] cursor-pointer hover:bg-[#f5f5f5] border-b border-[#e6e6e6] last:border-b-0",
+                    isActive && "bg-[#f5f5f5]"
+                  )}
+                  onClick={(e: MouseEvent) => {
+                    e.stopPropagation();
+                    handlePresetClick(preset);
+                  }}
+                >
+                  <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[#18180f] text-[14px] xl:text-[17px] 2xl:text-[21.33px] font-medium">
+                    {preset.name}
+                  </p>
+                  <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[#7a7a7a] text-[11px] xl:text-[13px] 2xl:text-[16px] mt-[4px]">
+                    {preset.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -1116,8 +1119,14 @@ function Swatch({ color, lValue, isAnchor = false }: { color: string; lValue: nu
     >
       {isAnchor && (
         <div
-          className="absolute top-[6px] left-[6px] size-[6px] rounded-full z-10"
-          style={{ backgroundColor: dotColor }}
+          className="absolute rounded-full z-10"
+          style={{
+            width: '6px',
+            height: '6px',
+            top: '6px',
+            left: '6px',
+            backgroundColor: dotColor
+          }}
           title="Anchor swatch"
         />
       )}
@@ -1147,18 +1156,8 @@ function Frame3({ min, max, steps, curve, hue = 0, saturation = 0, lightness = 5
   };
 
   const railLightnesses = Array.from({ length: steps }).map((_, i) => getLValue(i));
-  const { colors: rampColors, warning } = generateOklchRamp(hue, saturation, lightness, railLightnesses);
+  const { colors: rampColors, warning, anchorIndex } = generateOklchRamp(hue, saturation, lightness, railLightnesses);
 
-  // Calculate anchor index (closest lightness to input)
-  let anchorIndex = 0;
-  let smallestDiff = Math.abs(railLightnesses[0] - lightness);
-  for (let i = 1; i < railLightnesses.length; i++) {
-    const diff = Math.abs(railLightnesses[i] - lightness);
-    if (diff < smallestDiff) {
-      smallestDiff = diff;
-      anchorIndex = i;
-    }
-  }
 
   return (
     <div className="w-full">

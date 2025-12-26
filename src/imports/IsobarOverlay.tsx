@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { converter, inGamut } from 'culori';
+import { converter, displayable, toGamut } from 'culori';
 
 const toOklch = converter('oklch');
 const toRgb = converter('rgb');
-const isDisplayable = inGamut('rgb');
+const clampToSrgb = toGamut('rgb');
 
 /**
  * Warmth Correction (Anti-Mud Logic)
@@ -11,14 +11,14 @@ const isDisplayable = inGamut('rgb');
  */
 function applyWarmthCorrection(originalHue: number | undefined, currentLightness: number): number | undefined {
   if (originalHue === undefined) return originalHue;
-  
+
   // Trigger: If hue is between 60 and 110 (Yellow/Orange) AND lightness is below 0.5
   if (originalHue >= 60 && originalHue <= 110 && currentLightness < 0.5) {
     // Action: Gradually rotate hue toward Red (lower hue value) as lightness decreases
     const correction = 25 * (0.5 - currentLightness);
     return originalHue - correction;
   }
-  
+
   return originalHue;
 }
 
@@ -42,88 +42,88 @@ function findValueForTargetLightness(
   let high = 1;
   const tolerance = 0.001;
   const maxIterations = 20;
-  
+
   for (let i = 0; i < maxIterations; i++) {
     const mid = (low + high) / 2;
-    
+
     // Convert HSV to OKLCH
     const hsvColor = { mode: 'hsv' as const, h: hue, s: saturation, v: mid };
     const oklchColor = toOklch(hsvColor);
-    
+
     if (!oklchColor || oklchColor.l === undefined) {
       return null;
     }
-    
+
     const currentLightness = oklchColor.l;
     const diff = currentLightness - targetLightness;
-    
+
     if (Math.abs(diff) < tolerance) {
       return mid;
     }
-    
+
     if (currentLightness < targetLightness) {
       low = mid;
     } else {
       high = mid;
     }
   }
-  
+
   // Return the final approximation
   const mid = (low + high) / 2;
   return mid;
 }
 
-export default function IsobarOverlay({ 
-  currentHue, 
-  targetLightness, 
-  width, 
-  height 
+export default function IsobarOverlay({
+  currentHue,
+  targetLightness,
+  width,
+  height
 }: IsobarOverlayProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    
+
     // Set canvas size
     canvas.width = width;
     canvas.height = height;
-    
+
     // Clear canvas
     ctx.clearRect(0, 0, width, height);
-    
+
     // Create two separate paths for safe (in-gamut) and warning (out-of-gamut) zones
     const safePath = new Path2D();
     const warningPath = new Path2D();
-    
+
     let currentPath: 'safe' | 'warning' | null = null;
     const step = 2; // Sample every 2 pixels for performance
-    
+
     // Iterate across X-axis (Saturation)
     for (let x = 0; x <= width; x += step) {
       // Calculate normalized saturation (0-1)
       const saturation = x / width;
-      
+
       // Find the Y coordinate (brightness/value) where the color matches targetLightness
       const value = findValueForTargetLightness(currentHue, saturation, targetLightness);
-      
+
       if (value !== null && value >= 0 && value <= 1) {
         // Convert value to Y coordinate (inverted: top = high value, bottom = low value)
         const y = height * (1 - value);
-        
+
         // Reconstruct the full color at this point in OKLCH
         const hsvColor = { mode: 'hsv' as const, h: currentHue, s: saturation, v: value };
         const oklchColor = toOklch(hsvColor);
-        
+
         // Strict Boolean Check: Test if the warmth-corrected candidate is in sRGB gamut
         let isInGamut = true;
         if (oklchColor && oklchColor.l !== undefined && oklchColor.c !== undefined && oklchColor.h !== undefined) {
           // Apply warmth correction to the hue (same logic as color-engine.ts)
           const correctedHue = applyWarmthCorrection(oklchColor.h, oklchColor.l);
-          
+
           // Construct the candidate color with corrected hue but original chroma
           const candidate = {
             mode: 'oklch' as const,
@@ -131,15 +131,21 @@ export default function IsobarOverlay({
             c: oklchColor.c,
             h: correctedHue
           };
-          
+
           // The Check: Is this warmth-corrected candidate displayable in sRGB?
-          const safe = isDisplayable(candidate);
-          isInGamut = safe;
+          // The Check: Is this warmth-corrected candidate displayable in sRGB?
+          // We convert to RGB and manually check bounds to be absolutely sure
+          const rgb = toRgb(candidate);
+          const tolerance = -0.0001; // Allow tiny floating point errors
+          isInGamut = rgb.r >= tolerance && rgb.r <= 1 - tolerance &&
+            rgb.g >= tolerance && rgb.g <= 1 - tolerance &&
+            rgb.b >= tolerance && rgb.b <= 1 - tolerance;
+
         }
-        
+
         // Determine which path to use
         const targetPath = isInGamut ? 'safe' : 'warning';
-        
+
         if (currentPath === null) {
           // First point - start both paths
           safePath.moveTo(x, y);
@@ -170,7 +176,7 @@ export default function IsobarOverlay({
         currentPath = null;
       }
     }
-    
+
     // Render the safe path (solid white)
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
     ctx.lineWidth = 2;
@@ -178,7 +184,7 @@ export default function IsobarOverlay({
     ctx.lineJoin = 'round';
     ctx.setLineDash([]); // Solid line
     ctx.stroke(safePath);
-    
+
     // Render the warning path (dashed white, faded)
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
     ctx.lineWidth = 2;
@@ -186,16 +192,16 @@ export default function IsobarOverlay({
     ctx.lineJoin = 'round';
     ctx.setLineDash([4, 4]); // Dashed line
     ctx.stroke(warningPath);
-    
+
   }, [currentHue, targetLightness, width, height]);
-  
+
   return (
     <canvas
       ref={canvasRef}
       className="absolute inset-0 pointer-events-none"
-      style={{ 
-        width: `${width}px`, 
-        height: `${height}px` 
+      style={{
+        width: `${width}px`,
+        height: `${height}px`
       }}
     />
   );
