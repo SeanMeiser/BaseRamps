@@ -187,48 +187,6 @@ export default function IsobarOverlay({
     ctx.setLineDash([4, 4]); // Dashed line
     ctx.stroke(warningPath);
     
-    // Add dots along the safe isobar for visual emphasis
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-    ctx.setLineDash([]); // Reset for dots
-    const dotStep = 20; // Dot every 20 pixels
-    
-    for (let x = 0; x <= width; x += dotStep) {
-      const saturation = x / width;
-      const value = findValueForTargetLightness(currentHue, saturation, targetLightness);
-      
-      if (value !== null && value >= 0 && value <= 1) {
-        const y = height * (1 - value);
-        
-        // Check if this point is in-gamut using the same strict boolean check
-        const hsvColor = { mode: 'hsv' as const, h: currentHue, s: saturation, v: value };
-        const oklchColor = toOklch(hsvColor);
-        
-        let isInGamut = true;
-        if (oklchColor && oklchColor.l !== undefined && oklchColor.c !== undefined && oklchColor.h !== undefined) {
-          // Apply warmth correction
-          const correctedHue = applyWarmthCorrection(oklchColor.h, oklchColor.l);
-          
-          // Construct candidate color with corrected hue
-          const candidate = {
-            mode: 'oklch' as const,
-            l: oklchColor.l,
-            c: oklchColor.c,
-            h: correctedHue
-          };
-          
-          // The Check: Is this warmth-corrected candidate displayable in sRGB?
-          const safe = isDisplayable(candidate);
-          isInGamut = safe;
-        }
-        
-        if (isInGamut) {
-          ctx.beginPath();
-          ctx.arc(x, y, 2, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-    }
-    
   }, [currentHue, targetLightness, width, height]);
   
   return (
