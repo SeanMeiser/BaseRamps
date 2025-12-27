@@ -52,26 +52,27 @@ export default function OKLrCHPicker({ hue, lightness, chroma, railLightnesses, 
     useEffect(() => {
         if (dimensions.width === 0 || dimensions.height === 0) return;
 
-        const dpr = window.devicePixelRatio || 1;
-        const width = Math.floor(dimensions.width * dpr);
-        const height = Math.floor(dimensions.height * dpr);
+        // Use a fixed resolution multiplier for the cache to balance quality and performance
+        // 1.5x gives good quality without the full cost of 2x-3x DPR on Retina displays
+        const CACHE_RESOLUTION_MULTIPLIER = 1.5;
+        const width = Math.floor(dimensions.width * CACHE_RESOLUTION_MULTIPLIER);
+        const height = Math.floor(dimensions.height * CACHE_RESOLUTION_MULTIPLIER);
 
         if (!gradientCacheRef.current) {
             gradientCacheRef.current = document.createElement('canvas');
         }
 
         const cacheCanvas = gradientCacheRef.current;
-        // Check if size matches to avoid unnecessary resize clearing
-        // However, if we are redrawing anyway, resizing clears it for us, which is fine.
+        // Only resize if dimensions changed
         if (cacheCanvas.width !== width || cacheCanvas.height !== height) {
             cacheCanvas.width = width;
             cacheCanvas.height = height;
         }
 
-        const ctx = cacheCanvas.getContext('2d', { willReadFrequently: true });
+        const ctx = cacheCanvas.getContext('2d', { willReadFrequently: false });
         if (!ctx) return;
 
-        // Clear and fill with background (this might be redundant if we overwrite everything, but safe)
+        // Clear canvas
         ctx.clearRect(0, 0, width, height);
 
         // We render pixels fully opaque then mask, so background doesn't matter initially.
