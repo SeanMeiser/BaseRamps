@@ -93,12 +93,16 @@ function hexToHsl(hex: string): { h: number, s: number, l: number } | null {
 
 function ControlPanelHeader() {
   return (
-    <div className="bg-[#f5f5f5] h-[62px] relative shrink-0 w-full" data-name="ControlPanelHeader">
+    <div className="bg-[#f5f5f5] relative shrink-0 w-full" data-name="ControlPanelHeader">
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_1px_1px_0px] border-solid inset-0 pointer-events-none" />
       <div className="flex flex-row items-center w-full">
         <div className="content-stretch flex items-center px-[16px] pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] relative w-full">
-          <p className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] shrink-0 text-[#7a7a7a] text-[14px] xl:text-[17px] 2xl:text-[21.33px] text-nowrap">RAMP CONTROLS</p>
-          <div className="invisible flex items-center gap-[8px] opacity-0 pointer-events-none h-[24px] xl:h-[29px] 2xl:h-[36px]"></div>
+          <p className="absolute left-[16px] top-1/2 -translate-y-1/2 font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] shrink-0 text-[#7a7a7a] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">RAMP CONTROLS</p>
+          {/* Phantom element: mimic "Export" content (Text + Icon) which is the tallest element in Navigation */}
+          <div className="invisible flex items-center gap-[8px] opacity-0 pointer-events-none">
+            <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">Export</p>
+            <div className="relative shrink-0 size-[16px] xl:size-[18px] 2xl:size-[20px]" />
+          </div>
         </div>
       </div>
     </div>

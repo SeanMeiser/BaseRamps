@@ -901,7 +901,7 @@ function Navigation() {
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_1px] border-solid inset-0 pointer-events-none" />
       <div className="flex flex-row items-center w-full">
         <div className="content-stretch flex items-center justify-between pl-[24px] pr-0 py-0 relative w-full">
-          <p className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[12px] xl:text-[14px] 2xl:text-[16px] text-black text-nowrap">BASE PALETTE BUILDER</p>
+          <p className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[12px] xl:text-[14px] 2xl:text-[16px] text-black text-nowrap">BASE RAMPS</p>
           <ButtonGroup />
         </div>
       </div>
@@ -1049,7 +1049,7 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
   return [Math.round(255 * f(0)), Math.round(255 * f(8)), Math.round(255 * f(4))];
 }
 
-import { generateOklchRamp } from "./color-engine";
+import { generateOklchRamp, toOklch } from "./color-engine";
 import { formatHex, displayable } from 'culori';
 
 function blendWithWhite(r: number, g: number, b: number, opacity: number): [number, number, number] {
@@ -1450,6 +1450,67 @@ function Main({
   );
 }
 
+function FaviconUpdater({ min, max, steps, curve, selectedPalette }: {
+  min: number;
+  max: number;
+  steps: number;
+  curve: Curve;
+  selectedPalette: PaletteData | undefined;
+}) {
+  useEffect(() => {
+    if (!selectedPalette) return;
+
+    const getLValue = (index: number) => {
+      if (steps <= 1) return max;
+      const x = index / (steps - 1);
+      const curveY = getCurveY(x, curve);
+      const val = max - (curveY * (max - min));
+      return Math.round(Math.max(0, Math.min(100, val)));
+    };
+
+    const railLightnesses = Array.from({ length: steps }).map((_, i) => getLValue(i));
+
+    const { colors } = generateOklchRamp(
+      selectedPalette.hue,
+      selectedPalette.chroma,
+      selectedPalette.lightness,
+      railLightnesses
+    );
+
+    let maxChroma = -1;
+    let maxChromaColor = colors[0];
+
+    colors.forEach(hex => {
+      const oklchColor = toOklch(hex);
+      if (oklchColor && oklchColor.c !== undefined && oklchColor.c > maxChroma) {
+        maxChroma = oklchColor.c;
+        maxChromaColor = hex;
+      }
+    });
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.fillStyle = maxChromaColor;
+      ctx.fillRect(0, 0, 32, 32);
+
+      let link = document.querySelector("link[rel*='icon']") as HTMLLinkElement;
+      if (!link) {
+        link = document.createElement('link');
+        link.type = 'image/x-icon';
+        link.rel = 'shortcut icon';
+        document.head.appendChild(link);
+      }
+      link.href = canvas.toDataURL();
+    }
+
+  }, [min, max, steps, curve, selectedPalette]);
+
+  return null;
+}
+
 function Global() {
   const [range, setRange] = useState({ min: 5, max: 95 });
   const [steps, setSteps] = useState(7);
@@ -1538,6 +1599,13 @@ function Global() {
         onAdd={handleAddPalette}
         onDelete={handleDeletePalette}
         onPaletteChange={handlePaletteChange}
+      />
+      <FaviconUpdater
+        min={range.min}
+        max={range.max}
+        steps={steps}
+        curve={curve}
+        selectedPalette={selectedPalette}
       />
     </div>
   );

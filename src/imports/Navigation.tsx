@@ -45,7 +45,7 @@ export default function Navigation() {
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_1px] border-solid inset-0 pointer-events-none" />
       <div className="flex flex-row items-center size-full">
         <div className="content-stretch flex items-center justify-between pl-[24px] pr-0 py-0 relative size-full">
-          <p className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[14px] xl:text-[16px] 2xl:text-[18px] text-black text-nowrap">BASE PALETTE BUILDER</p>
+          <p className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[14px] xl:text-[16px] 2xl:text-[18px] text-black text-nowrap">BASE RAMPS</p>
           <ButtonGroup />
         </div>
       </div>
