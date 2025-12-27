@@ -71,7 +71,7 @@ const CURVE_PRESETS: CurvePreset[] = [
 function LightnessScaleItemText1({ text }: LightnessScaleItemText1Props) {
   return (
     <div className="basis-0 content-stretch flex grow items-center min-h-px min-w-px relative shrink-0">
-      <p className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[#7a7a7a] text-[11px] xl:text-[13px] 2xl:text-[16px] text-nowrap">{text}</p>
+      <p className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[#7a7a7a] text-[10px] xl:text-[11px] 2xl:text-[12px] text-nowrap">{text}</p>
     </div>
   );
 }
@@ -82,7 +82,7 @@ type LightnessScaleItemTextProps = {
 function LightnessScaleItemText({ text }: LightnessScaleItemTextProps) {
   return (
     <div className="basis-0 content-stretch flex grow items-center min-h-px min-w-px relative shrink-0">
-      <p className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[#18180f] text-[14px] xl:text-[17px] 2xl:text-[21.33px] text-nowrap">{text}</p>
+      <p className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">{text}</p>
     </div>
   );
 }
@@ -120,7 +120,7 @@ function Text({ text, onClick, isEditing, onChange, onBlur, onKeyDown }: TextPro
           onKeyDown={onKeyDown}
           autoFocus
           onFocus={(e) => e.target.select()}
-          className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic text-[#18180f] text-[14px] xl:text-[17px] 2xl:text-[21.33px] w-full bg-transparent border-none outline-none"
+          className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px] w-full bg-transparent border-none outline-none"
         />
       </div>
     );
@@ -131,7 +131,7 @@ function Text({ text, onClick, isEditing, onChange, onBlur, onKeyDown }: TextPro
       className="content-stretch flex flex-col items-start justify-center pb-[12px] pt-[8px] px-[16px] relative shrink-0 cursor-pointer flex-1"
       onClick={onClick}
     >
-      <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[14px] xl:text-[17px] 2xl:text-[21.33px]">{text}</p>
+      <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px]">{text}</p>
     </div>
   );
 }
@@ -142,11 +142,11 @@ function ControlPanelHeader() {
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_1px_1px_0px] border-solid inset-0 pointer-events-none" />
       <div className="flex flex-row items-center w-full">
         <div className="content-stretch flex items-center px-[16px] pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] relative w-full">
-          <p className="absolute left-[16px] top-1/2 -translate-y-1/2 font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] shrink-0 text-[#7a7a7a] text-[14px] xl:text-[17px] 2xl:text-[21.33px] text-nowrap">SYSTEM CONTROLS</p>
+          <p className="absolute left-[16px] top-1/2 -translate-y-1/2 font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] shrink-0 text-[#7a7a7a] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">SYSTEM CONTROLS</p>
           {/* Phantom element: mimic "Export" content (Text + Icon) which is the tallest element in Navigation */}
           <div className="invisible flex items-center gap-[8px] opacity-0 pointer-events-none">
-            <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] text-[14px] xl:text-[17px] 2xl:text-[21.33px] text-nowrap">Export</p>
-            <div className="relative shrink-0 size-[24px] xl:size-[29px] 2xl:size-[36px]" />
+            <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">Export</p>
+            <div className="relative shrink-0 size-[16px] xl:size-[18px] 2xl:size-[20px]" />
           </div>
         </div>
       </div>
@@ -199,7 +199,7 @@ function EditableLabel({ value, onCommit, suffix = "" }: EditableLabelProps) {
         onKeyDown={handleKeyDown}
         autoFocus
         onFocus={(e) => e.target.select()}
-        className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] text-[#18180f] text-[11px] xl:text-[13px] 2xl:text-[16px] bg-transparent border-none outline-none w-[4ch] p-0 m-0 text-center"
+        className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] text-[#18180f] text-[10px] xl:text-[11px] 2xl:text-[12px] bg-transparent border-none outline-none w-[4ch] p-0 m-0 text-center"
       />
     );
   }
@@ -223,7 +223,7 @@ type LabelsProps = {
 
 function Labels({ min, max, onMinChange, onMaxChange }: LabelsProps) {
   return (
-    <div className="content-stretch flex font-['JetBrains_Mono:Regular',sans-serif] font-normal items-end justify-between leading-[normal] relative shrink-0 text-[#7a7a7a] text-[11px] xl:text-[13px] 2xl:text-[16px] text-nowrap w-full" data-name="Labels">
+    <div className="content-stretch flex font-['JetBrains_Mono:Regular',sans-serif] font-normal items-end justify-between leading-[normal] relative shrink-0 text-[#7a7a7a] text-[10px] xl:text-[11px] 2xl:text-[12px] text-nowrap w-full" data-name="Labels">
       <EditableLabel value={max} onCommit={onMaxChange} suffix="%" />
       <EditableLabel value={min} onCommit={onMinChange} suffix="%" />
     </div>
@@ -371,7 +371,7 @@ function LightnessRangeControls({ min, max, onChange }: { min: number; max: numb
 function LightnessRange({ min, max, onChange }: { min: number; max: number; onChange: (min: number, max: number) => void }) {
   return (
     <div className="content-stretch flex flex-col gap-[16px] items-start relative shrink-0 w-full" data-name="LightnessRange">
-      <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[14px] xl:text-[17px] 2xl:text-[21.33px] text-nowrap">Lightness Range</p>
+      <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">Lightness Range</p>
       <LightnessRangeControls min={min} max={max} onChange={onChange} />
     </div>
   );
@@ -508,7 +508,7 @@ function Stepper1({ steps, onChange }: { steps: number; onChange: (val: number) 
 function Steps({ steps, onChange }: { steps: number; onChange: (val: number) => void }) {
   return (
     <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full" data-name="Steps">
-      <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[14px] xl:text-[17px] 2xl:text-[21.33px] text-nowrap">Steps</p>
+      <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">Steps</p>
       <Stepper1 steps={steps} onChange={onChange} />
     </div>
   );
@@ -557,6 +557,25 @@ function DropDown({ label }: { label: string }) {
 
 function LightnessCurvePresets({ curve, onChange }: { curve: Curve; onChange: (c: Curve) => void }) {
   const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
 
   // Helper to compare curves with small epsilon for floating-point tolerance
   const curvesMatch = (c1: Curve, c2: Curve) => {
@@ -578,10 +597,10 @@ function LightnessCurvePresets({ curve, onChange }: { curve: Curve; onChange: (c
 
   return (
     <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full" data-name="LightnessCurvePresets">
-      <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[14px] xl:text-[17px] 2xl:text-[21.33px] text-nowrap">Lightness Curve</p>
+      <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">Lightness Curve</p>
 
       {/* Position Wrapper */}
-      <div className="relative w-full">
+      <div className="relative w-full" ref={containerRef}>
         {/* Dropdown Trigger */}
         <div
           className="content-stretch flex items-center justify-between relative shrink-0 w-full cursor-pointer"
@@ -589,7 +608,7 @@ function LightnessCurvePresets({ curve, onChange }: { curve: Curve; onChange: (c
         >
           <div aria-hidden="true" className="absolute border border-[#c4c4c4] border-solid inset-0 pointer-events-none" />
           <div className="content-stretch flex flex-col items-start justify-center pb-[12px] pt-[8px] px-[16px] relative shrink-0 flex-1">
-            <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[14px] xl:text-[17px] 2xl:text-[21.33px]">{label}</p>
+            <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px]">{label}</p>
           </div>
           <div className="flex flex-row items-center self-stretch">
             <div className="content-stretch flex h-full items-center relative shrink-0">
@@ -603,7 +622,7 @@ function LightnessCurvePresets({ curve, onChange }: { curve: Curve; onChange: (c
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute top-full left-0 right-0 z-50 bg-white border border-[#c4c4c4] mt-1 shadow-lg">
+          <div className="absolute top-full left-0 right-0 z-50 bg-white border border-[#c4c4c4] border-t-0 shadow-lg">
             {CURVE_PRESETS.map((preset) => {
               const isActive = curvesMatch(curve, preset.coordinates);
               return (
@@ -618,10 +637,10 @@ function LightnessCurvePresets({ curve, onChange }: { curve: Curve; onChange: (c
                     handlePresetClick(preset);
                   }}
                 >
-                  <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[#18180f] text-[14px] xl:text-[17px] 2xl:text-[21.33px] font-medium">
+                  <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px] font-medium">
                     {preset.name}
                   </p>
-                  <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[#7a7a7a] text-[11px] xl:text-[13px] 2xl:text-[16px] mt-[4px]">
+                  <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[#7a7a7a] text-[10px] xl:text-[11px] 2xl:text-[12px] mt-[4px]">
                     {preset.description}
                   </p>
                 </div>
@@ -841,14 +860,14 @@ function Documentation() {
   return (
     <div className="content-stretch flex items-center justify-center pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] px-[16px] relative shrink-0" data-name="Documentation">
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_0px_1px] border-solid inset-0 pointer-events-none" />
-      <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#7a7a7a] text-[14px] xl:text-[17px] 2xl:text-[21.33px] text-nowrap">Documentation</p>
+      <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#7a7a7a] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">Documentation</p>
     </div>
   );
 }
 
 function ExportLight() {
   return (
-    <div className="relative shrink-0 size-[24px] xl:size-[29px] 2xl:size-[36px]" data-name="export-light">
+    <div className="relative shrink-0 size-[16px] xl:size-[18px] 2xl:size-[20px]" data-name="export-light">
       <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 24 24">
         <g id="export-light">
           <path d={svgPaths.p2f505f00} fill="var(--fill-0, white)" id="Vector" />
@@ -861,7 +880,7 @@ function ExportLight() {
 function Export() {
   return (
     <div className="bg-[#020202] content-stretch flex gap-[8px] items-center justify-center pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] px-[16px] relative shrink-0" data-name="Export">
-      <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[14px] xl:text-[17px] 2xl:text-[21.33px] text-nowrap text-white">Export</p>
+      <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap text-white">Export</p>
       <ExportLight />
     </div>
   );
@@ -882,7 +901,7 @@ function Navigation() {
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_1px] border-solid inset-0 pointer-events-none" />
       <div className="flex flex-row items-center w-full">
         <div className="content-stretch flex items-center justify-between pl-[24px] pr-0 py-0 relative w-full">
-          <p className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[14px] xl:text-[17px] 2xl:text-[21.33px] text-black text-nowrap">BASE PALETTE BUILDER</p>
+          <p className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[12px] xl:text-[14px] 2xl:text-[16px] text-black text-nowrap">BASE PALETTE BUILDER</p>
           <ButtonGroup />
         </div>
       </div>
@@ -952,7 +971,7 @@ function SystemRail({ min, max, steps, curve, isSelected }: { min: number; max: 
 
 function TrashLight() {
   return (
-    <div className="relative shrink-0 size-[20px] xl:size-[26px] 2xl:size-[32px]" data-name="trash-light">
+    <div className="relative shrink-0 size-[16px] xl:size-[18px] 2xl:size-[20px]" data-name="trash-light">
       <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 32 32">
         <g id="trash-light">
           <path d={svgPaths.p2bf07e80} fill="var(--fill-0, #7A7A7A)" id="Vector" />
@@ -997,12 +1016,12 @@ function PaletteHeader({ name, onChange, onDelete }: { name: string; onChange?: 
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           onClick={(e) => e.stopPropagation()}
-          className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[18px] xl:text-[23px] 2xl:text-[28.43px] bg-transparent outline-none border-none p-0 w-full"
+          className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[16px] xl:text-[18px] 2xl:text-[20px] bg-transparent outline-none border-none p-0 w-full"
         />
       ) : (
         <p
           onClick={handleClick}
-          className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[18px] xl:text-[23px] 2xl:text-[28.43px] text-nowrap cursor-pointer hover:underline"
+          className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[16px] xl:text-[18px] 2xl:text-[20px] text-nowrap cursor-pointer hover:underline"
         >
           {name}
         </p>
@@ -1163,7 +1182,7 @@ function Frame3({ min, max, steps, curve, hue = 0, saturation = 0, lightness = 5
     <div className="w-full">
       {warning && (
         <div className="mb-[8px] px-[8px] py-[6px] bg-[#fff3cd] border border-[#ffc107] rounded-[4px]">
-          <p className="font-['JetBrains_Mono:Regular',sans-serif] text-[10px] xl:text-[12px] 2xl:text-[14px] text-[#856404] leading-[normal]">
+          <p className="font-['JetBrains_Mono:Regular',sans-serif] text-[10px] xl:text-[11px] 2xl:text-[12px] text-[#856404] leading-[normal]">
             ⚠ Color adjusted to fit system constraints.
           </p>
         </div>
@@ -1195,7 +1214,7 @@ function AddRampButton({ onClick }: { onClick: () => void }) {
     >
       <div className="flex items-center gap-[8px] opacity-50 group-hover:opacity-100 transition-opacity">
         <Plus />
-        <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[14px] xl:text-[17px] 2xl:text-[21.33px] text-nowrap">Add Ramp</p>
+        <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">Add Ramp</p>
       </div>
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_1px] border-solid inset-0 pointer-events-none" />
     </div>
@@ -1434,7 +1453,7 @@ function Global() {
   const [range, setRange] = useState({ min: 5, max: 95 });
   const [steps, setSteps] = useState(7);
   // Default to Linear (0,0, 1,1)
-  const [curve, setCurve] = useState<Curve>({ x1: 0, y1: 0, x2: 1, y2: 1 });
+  const [curve, setCurve] = useState<Curve>({ x1: 0.5, y1: 0.5, x2: 0.5, y2: 0.5 });
   const [palettes, setPalettes] = useState<Array<PaletteData>>([]);
   const [neutralPalette, setNeutralPalette] = useState<PaletteData>({
     id: 'neutral',

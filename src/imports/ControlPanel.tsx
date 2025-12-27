@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import svgPaths from "./svg-6ygof4qbak";
 import svgPathsK from "./svg-kkxrrzwln3";
 import IsobarOverlay from "./IsobarOverlay";
+import OKLrCHPicker from "./OKLrCHPicker";
 import { converter } from 'culori';
 import { generateOklchRamp } from './color-engine';
 
@@ -58,8 +59,8 @@ function blendWithWhite(r: number, g: number, b: number, opacity: number): [numb
 }
 
 function rgbToHex(r: number, g: number, b: number): string {
-   const toHex = (c: number) => c.toString(16).padStart(2, '0').toUpperCase();
-   return `${toHex(r)}${toHex(g)}${toHex(b)}`;
+  const toHex = (c: number) => c.toString(16).padStart(2, '0').toUpperCase();
+  return `${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
 function hslToHex(h: number, s: number, l: number): string {
@@ -95,7 +96,7 @@ function ControlPanelHeader() {
       <div className="flex flex-row items-center w-full">
         <div className="content-stretch flex items-center px-[16px] pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] relative w-full">
           <p className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] shrink-0 text-[#7a7a7a] text-[14px] xl:text-[17px] 2xl:text-[21.33px] text-nowrap">RAMP CONTROLS</p>
-           <div className="invisible flex items-center gap-[8px] opacity-0 pointer-events-none h-[24px] xl:h-[29px] 2xl:h-[36px]"></div>
+          <div className="invisible flex items-center gap-[8px] opacity-0 pointer-events-none h-[24px] xl:h-[29px] 2xl:h-[36px]"></div>
         </div>
       </div>
     </div>
@@ -130,7 +131,7 @@ function ColorScaleName({ name, onChange }: { name: string; onChange: (name: str
         <input
           autoFocus
           onFocus={(e) => e.target.select()}
-          className="basis-0 font-['PP_Neue_Montreal:Book',sans-serif] grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#18180f] text-[37.9px] bg-transparent outline-none border-none p-0"
+          className="basis-0 font-['PP_Neue_Montreal:Book',sans-serif] grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#18180f] text-[30px] xl:text-[37.9px] 2xl:text-[47px] bg-transparent outline-none border-none p-0"
           value={tempName}
           onChange={(e) => setTempName(e.target.value)}
           onBlur={handleBlur}
@@ -138,8 +139,7 @@ function ColorScaleName({ name, onChange }: { name: string; onChange: (name: str
           onClick={(e) => e.stopPropagation()}
         />
       ) : (
-        <p 
-          className="basis-0 font-['PP_Neue_Montreal:Book',sans-serif] grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#18180f] text-[37.9px] cursor-pointer"
+        <p className="basis-0 font-['PP_Neue_Montreal:Book',sans-serif] grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#18180f] text-[30px] xl:text-[37.9px] 2xl:text-[47px] cursor-pointer"
           onClick={handleClick}
         >
           {name}
@@ -149,24 +149,24 @@ function ColorScaleName({ name, onChange }: { name: string; onChange: (name: str
   );
 }
 
-function ColorPicker({ hue, saturation, lightness, onChange, min, max, steps, curve }: { 
-  hue: number; 
-  saturation: number; 
-  lightness: number; 
+function ColorPicker({ hue, saturation, lightness, onChange, min, max, steps, curve }: {
+  hue: number;
+  saturation: number;
+  lightness: number;
   onChange: (s: number, l: number) => void;
   min: number;
   max: number;
   steps: number;
   curve: Curve;
 }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isDragging = useRef(false);
+  // Convert current HSL to OKLCH to get chroma AND hue in OKLCH space
+  const currentHsl = { mode: 'hsl' as const, h: hue, s: saturation / 100, l: lightness / 100 };
+  const currentOklch = toOklch(currentHsl);
+  const currentChroma = currentOklch?.c || 0;
+  const currentLightness = currentOklch?.l || 0.5;
+  const currentOklchHue = currentOklch?.h || hue; // Extract OKLCH hue
 
-  // Convert current HSL to HSV for display position
-  const { s: s_hsv, v: v_hsv } = hslToHsv(hue, saturation, lightness);
-
-  // Calculate the anchor lightness (target lightness for IsobarOverlay)
-  // This is the lightness value from the system rail that the user's color will snap to
+  // Calculate the anchor lightness (target lightness for system rail)
   const getLValue = (index: number) => {
     if (steps <= 1) return max;
     const x = index / (steps - 1);
@@ -192,7 +192,7 @@ function ColorPicker({ hue, saturation, lightness, onChange, min, max, steps, cu
 
   // Calculate all rail lightnesses
   const railLightnesses = Array.from({ length: steps }).map((_, i) => getLValue(i));
-  
+
   // Find the anchor index (closest rail lightness to user's input)
   let anchorIndex = 0;
   let smallestDiff = Math.abs(railLightnesses[0] - lightness);
@@ -203,109 +203,36 @@ function ColorPicker({ hue, saturation, lightness, onChange, min, max, steps, cu
       anchorIndex = i;
     }
   }
-  
+
   // Get the target lightness in OKLCH space (0-1)
   const targetLightnessHSL = railLightnesses[anchorIndex];
   const targetColor = { mode: 'hsl' as const, h: hue, s: saturation / 100, l: targetLightnessHSL / 100 };
   const targetOklch = toOklch(targetColor);
   const targetLightness = targetOklch?.l || 0.5;
 
-  const handleMove = useCallback((e: PointerEvent) => {
-    if (!isDragging.current || !containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+  // Handle changes from OKLrCHPicker (receives chroma and lightness in OKLCH space)
+  const handleOklchChange = (c: number, l: number) => {
+    // Convert OKLCH back to HSL for state management
+    // IMPORTANT: Use the OKLCH hue, not HSL hue!
+    const toHsl = converter('hsl');
+    const oklchColor = { mode: 'oklch' as const, l, c, h: currentOklchHue };
+    const hslColor = toHsl(oklchColor);
 
-    // x is Saturation (HSV), y is 1 - Value (HSV)
-    const newS_hsv = x * 100;
-    const newV_hsv = (1 - y) * 100;
-
-    // Convert back to HSL
-    const { s, l } = hsvToHsl(hue, newS_hsv, newV_hsv);
-    onChange(s, l);
-  }, [hue, onChange]);
-
-  const handleUp = useCallback(() => {
-    isDragging.current = false;
-    document.body.style.cursor = "";
-    document.body.style.userSelect = "";
-    window.removeEventListener("pointermove", handleMove);
-    window.removeEventListener("pointerup", handleUp);
-  }, [handleMove]);
-
-  const handleDown = (e: React.PointerEvent) => {
-    e.preventDefault();
-    isDragging.current = true;
-    document.body.style.cursor = "move";
-    document.body.style.userSelect = "none";
-    handleMove(e.nativeEvent); // Trigger immediately
-    window.addEventListener("pointermove", handleMove);
-    window.addEventListener("pointerup", handleUp);
-  };
-
-  // Background color for the square (Hue)
-  const hueColor = `hsl(${hue}, 100%, 50%)`;
-
-  // Get container dimensions for IsobarOverlay
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  
-  useEffect(() => {
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      setDimensions({ width: rect.width, height: rect.height });
-      
-      const observer = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          setDimensions({
-            width: entry.contentRect.width,
-            height: entry.contentRect.height
-          });
-        }
-      });
-      
-      observer.observe(containerRef.current);
-      return () => observer.disconnect();
+    if (hslColor && hslColor.s !== undefined && hslColor.l !== undefined) {
+      const newS = hslColor.s * 100;
+      const newL = hslColor.l * 100;
+      onChange(newS, newL);
     }
-  }, []);
+  };
 
   return (
     <div className="bg-white relative shrink-0 w-full aspect-square select-none touch-none" data-name="ColorPicker">
-      <div 
-        ref={containerRef}
-        className="overflow-clip relative rounded-[inherit] size-full cursor-pointer"
-        onPointerDown={handleDown}
-        style={{ backgroundColor: hueColor }}
-      >
-        <div 
-          className="absolute inset-0 pointer-events-none" 
-          style={{ background: "linear-gradient(to right, #fff, rgba(255,255,255,0))" }} 
-        />
-        <div 
-          className="absolute inset-0 pointer-events-none" 
-          style={{ background: "linear-gradient(to top, #000, rgba(0,0,0,0))" }} 
-        />
-        
-        {/* Isobar Overlay */}
-        {dimensions.width > 0 && dimensions.height > 0 && (
-          <IsobarOverlay 
-            currentHue={hue}
-            targetLightness={targetLightness}
-            width={dimensions.width}
-            height={dimensions.height}
-          />
-        )}
-
-        {/* Handle */}
-        <div 
-          className="absolute size-[30px] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-          style={{ left: `${s_hsv}%`, top: `${100 - v_hsv}%` }}
-        >
-          <div className="w-full h-full rounded-full border-[3px] border-white shadow-sm flex items-center justify-center bg-transparent">
-             <div className="w-[80%] h-[80%] rounded-full" style={{ backgroundColor: `hsl(${hue}, ${saturation}%, ${lightness}%)` }} />
-          </div>
-        </div>
-      </div>
-      <div aria-hidden="true" className="absolute border border-[#c4c4c4] border-solid inset-0 pointer-events-none" />
+      <OKLrCHPicker
+        hue={currentOklchHue}
+        lightness={targetLightness}
+        chroma={currentChroma}
+        onChange={handleOklchChange}
+      />
     </div>
   );
 }
@@ -363,20 +290,20 @@ function HueBar({ hue, onChange }: { hue: number; onChange: (h: number) => void 
   };
 
   return (
-    <div 
-      className="h-[16px] relative shrink-0 w-full cursor-pointer touch-none" 
+    <div
+      className="h-[16px] relative shrink-0 w-full cursor-pointer touch-none"
       data-name="HueBar"
       ref={containerRef}
       onPointerDown={handleDown}
     >
-      <div 
-        className="absolute h-[16px] left-0 right-0 top-1/2 translate-y-[-50%] rounded-sm" 
-        style={{ background: "linear-gradient(90deg, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%)" }} 
+      <div
+        className="absolute h-[16px] left-0 right-0 top-1/2 translate-y-[-50%] rounded-sm"
+        style={{ background: "linear-gradient(90deg, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%)" }}
       />
-      <div 
-        className="absolute bg-[#020202] size-[24px] top-1/2 -translate-y-1/2 cursor-ew-resize border border-white shadow-sm -ml-[12px]" 
+      <div
+        className="absolute bg-[#020202] size-[24px] top-1/2 -translate-y-1/2 cursor-ew-resize border border-white shadow-sm -ml-[12px]"
         style={{ left: `${(hue / 360) * 100}%` }}
-        data-name="Handle" 
+        data-name="Handle"
       />
     </div>
   );
@@ -414,33 +341,33 @@ function OpacityBar({ opacity, hue, saturation, lightness, onChange }: { opacity
   const color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 
   return (
-    <div 
-      className="h-[16px] relative shrink-0 w-full cursor-pointer touch-none" 
+    <div
+      className="h-[16px] relative shrink-0 w-full cursor-pointer touch-none"
       data-name="OpacityBar"
       ref={containerRef}
       onPointerDown={handleDown}
     >
       <div className="absolute h-[16px] left-0 right-0 top-1/2 translate-y-[-50%] overflow-hidden rounded-sm">
-         {/* Checkerboard background */}
-         <div 
-           className="absolute inset-0" 
-           style={{ 
-             backgroundImage: `linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)`,
-             backgroundSize: '10px 10px',
-             backgroundPosition: '0 0, 0 5px, 5px -5px, -5px 0px',
-             backgroundColor: 'white'
-           }} 
-         />
-         {/* Gradient from transparent to color */}
-         <div 
-           className="absolute inset-0"
-           style={{ background: `linear-gradient(to right, transparent, ${color})` }}
-         />
+        {/* Checkerboard background */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)`,
+            backgroundSize: '10px 10px',
+            backgroundPosition: '0 0, 0 5px, 5px -5px, -5px 0px',
+            backgroundColor: 'white'
+          }}
+        />
+        {/* Gradient from transparent to color */}
+        <div
+          className="absolute inset-0"
+          style={{ background: `linear-gradient(to right, transparent, ${color})` }}
+        />
       </div>
-      <div 
-        className="absolute bg-[#020202] size-[24px] top-1/2 -translate-y-1/2 cursor-ew-resize border border-white shadow-sm -ml-[12px]" 
+      <div
+        className="absolute bg-[#020202] size-[24px] top-1/2 -translate-y-1/2 cursor-ew-resize border border-white shadow-sm -ml-[12px]"
         style={{ left: `${opacity}%` }}
-        data-name="Handle" 
+        data-name="Handle"
       />
     </div>
   );
@@ -476,14 +403,14 @@ function InputTypeDropDown() {
   );
 }
 
-function ColorInput({ hue, saturation, lightness, opacity, onColorChange, onOpacityChange, min, max, steps, curve }: { 
-    hue: number; saturation: number; lightness: number; opacity: number;
-    onColorChange: (h: number, s: number, l: number) => void;
-    onOpacityChange: (o: number) => void;
-    min: number;
-    max: number;
-    steps: number;
-    curve: Curve;
+function ColorInput({ hue, saturation, lightness, opacity, onColorChange, onOpacityChange, min, max, steps, curve }: {
+  hue: number; saturation: number; lightness: number; opacity: number;
+  onColorChange: (h: number, s: number, l: number) => void;
+  onOpacityChange: (o: number) => void;
+  min: number;
+  max: number;
+  steps: number;
+  curve: Curve;
 }) {
   // Helper function to compute system-snapped color
   const getSystemSnappedHex = () => {
@@ -511,10 +438,10 @@ function ColorInput({ hue, saturation, lightness, opacity, onColorChange, onOpac
     };
 
     const railLightnesses = Array.from({ length: steps }).map((_, i) => getLValue(i));
-    
+
     // Run the color through the system engine
     const { colors } = generateOklchRamp(hue, saturation, lightness, railLightnesses);
-    
+
     // Find the anchor index (closest to user's input)
     let anchorIndex = 0;
     let smallestDiff = Math.abs(railLightnesses[0] - lightness);
@@ -525,10 +452,10 @@ function ColorInput({ hue, saturation, lightness, opacity, onColorChange, onOpac
         anchorIndex = i;
       }
     }
-    
+
     // Get the system-processed color at the anchor
     const systemColorHex = colors[anchorIndex];
-    
+
     // Apply opacity blending
     const hexToRgb = (hex: string): [number, number, number] => {
       const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -539,7 +466,7 @@ function ColorInput({ hue, saturation, lightness, opacity, onColorChange, onOpac
         parseInt(result[3], 16)
       ];
     };
-    
+
     const [r, g, b] = hexToRgb(systemColorHex);
     const [r2, g2, b2] = blendWithWhite(r, g, b, opacity);
     return rgbToHex(r2, g2, b2);
@@ -576,7 +503,7 @@ function ColorInput({ hue, saturation, lightness, opacity, onColorChange, onOpac
     onOpacityChange(val);
     setLocalOpacity(String(val));
   };
-  
+
   const handleOpacityKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleOpacityBlur();
   };
@@ -584,15 +511,15 @@ function ColorInput({ hue, saturation, lightness, opacity, onColorChange, onOpac
   return (
     <div className="content-stretch flex gap-[8px] xl:gap-[12px] 2xl:gap-[16px] items-stretch relative w-full h-[32px] xl:h-[40px] 2xl:h-[50px]" data-name="ColorInput">
       <InputTypeDropDown />
-      
+
       {/* Input Group */}
       <div className="basis-0 content-stretch flex grow items-center justify-between min-h-px min-w-px relative shrink-0 border border-[#c4c4c4] border-solid" data-name="Input">
-        
+
         {/* Hex Input */}
         <div className="basis-0 grow min-h-px min-w-px relative shrink-0" data-name="InputField">
           <div className="flex flex-col items-center justify-center size-full">
             <div className="content-stretch flex flex-col items-center justify-center px-[8px] xl:px-[12px] 2xl:px-[16px] relative w-full">
-              <input 
+              <input
                 value={hex}
                 onChange={handleHexChange}
                 className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[#18180f] text-[14px] xl:text-[17px] 2xl:text-[21.33px] w-full bg-transparent outline-none border-none text-center uppercase"
@@ -600,7 +527,7 @@ function ColorInput({ hue, saturation, lightness, opacity, onColorChange, onOpac
             </div>
           </div>
         </div>
-        
+
         {/* Divider */}
         <div className="bg-[#c4c4c4] h-full shrink-0 w-px" />
 
@@ -620,40 +547,40 @@ function ColorInput({ hue, saturation, lightness, opacity, onColorChange, onOpac
   );
 }
 
-function Frame1({ hue, saturation, lightness, opacity, onHueChange, onColorChange, onOpacityChange, min, max, steps, curve }: { 
-    hue: number; saturation: number; lightness: number; opacity: number;
-    onHueChange: (h: number) => void;
-    onColorChange: (h: number, s: number, l: number) => void;
-    onOpacityChange: (o: number) => void;
-    min: number;
-    max: number;
-    steps: number;
-    curve: Curve;
+function Frame1({ hue, saturation, lightness, opacity, onHueChange, onColorChange, onOpacityChange, min, max, steps, curve }: {
+  hue: number; saturation: number; lightness: number; opacity: number;
+  onHueChange: (h: number) => void;
+  onColorChange: (h: number, s: number, l: number) => void;
+  onOpacityChange: (o: number) => void;
+  min: number;
+  max: number;
+  steps: number;
+  curve: Curve;
 }) {
   return (
     <div className="content-stretch flex gap-[24px] items-stretch relative shrink-0 w-full">
       <div className="basis-0 content-stretch flex flex-col gap-[24px] grow items-start min-h-px min-w-px relative shrink-0 justify-center">
         <HueBar hue={hue} onChange={onHueChange} />
         <OpacityBar opacity={opacity} hue={hue} saturation={saturation} lightness={lightness} onChange={onOpacityChange} />
-        <ColorInput 
-            hue={hue} 
-            saturation={saturation} 
-            lightness={lightness} 
-            opacity={opacity}
-            onColorChange={onColorChange}
-            onOpacityChange={onOpacityChange}
-            min={min}
-            max={max}
-            steps={steps}
-            curve={curve}
+        <ColorInput
+          hue={hue}
+          saturation={saturation}
+          lightness={lightness}
+          opacity={opacity}
+          onColorChange={onColorChange}
+          onOpacityChange={onOpacityChange}
+          min={min}
+          max={max}
+          steps={steps}
+          curve={curve}
         />
       </div>
     </div>
   );
 }
 
-function ControlsNewColorScale({ palette, onChange, min, max, steps, curve }: { 
-  palette: PaletteData; 
+function ControlsNewColorScale({ palette, onChange, min, max, steps, curve }: {
+  palette: PaletteData;
   onChange: (updates: Partial<PaletteData>) => void;
   min: number;
   max: number;
@@ -664,7 +591,7 @@ function ControlsNewColorScale({ palette, onChange, min, max, steps, curve }: {
   const handleColorChange = (s: number, l: number) => onChange({ saturation: s, lightness: l });
   const handleHueChange = (hue: number) => onChange({ hue });
   const handleOpacityChange = (opacity: number) => onChange({ opacity });
-  
+
   // New handler for full color change from Hex input
   const handleFullColorChange = (h: number, s: number, l: number) => onChange({ hue: h, saturation: s, lightness: l });
 
@@ -672,19 +599,19 @@ function ControlsNewColorScale({ palette, onChange, min, max, steps, curve }: {
     <div className="bg-[#f5f5f5] flex-1 relative w-full overflow-auto" data-name="Controls--NewColorScale">
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_1px_0px_0px] border-solid inset-0 pointer-events-none" />
       <div className="size-full">
-        <div className="content-stretch flex flex-col gap-[32px] items-start pb-[24px] pt-[16px] px-[24px] relative w-full">
+        <div className="content-stretch flex flex-col gap-[24px] items-start pb-[24px] pt-[16px] px-[24px] relative w-full">
           <ColorScaleName name={palette.name} onChange={handleNameChange} />
-          <ColorPicker 
-            hue={palette.hue} 
-            saturation={palette.saturation} 
-            lightness={palette.lightness} 
-            onChange={handleColorChange} 
+          <ColorPicker
+            hue={palette.hue}
+            saturation={palette.saturation}
+            lightness={palette.lightness}
+            onChange={handleColorChange}
             min={min}
             max={max}
             steps={steps}
             curve={curve}
           />
-          <Frame1 
+          <Frame1
             hue={palette.hue}
             saturation={palette.saturation}
             lightness={palette.lightness}
@@ -703,8 +630,8 @@ function ControlsNewColorScale({ palette, onChange, min, max, steps, curve }: {
   );
 }
 
-export default function ControlPanel({ palette, onChange, min, max, steps, curve }: { 
-  palette?: PaletteData; 
+export default function ControlPanel({ palette, onChange, min, max, steps, curve }: {
+  palette?: PaletteData;
   onChange?: (updates: Partial<PaletteData>) => void;
   min: number;
   max: number;
@@ -713,7 +640,7 @@ export default function ControlPanel({ palette, onChange, min, max, steps, curve
 }) {
   // If no palette selected (shouldn't happen given parent logic, but for safety)
   if (!palette || !onChange) {
-      return <div className="p-4 text-gray-500">No ramp selected</div>;
+    return <div className="p-4 text-gray-500">No ramp selected</div>;
   }
 
   return (
