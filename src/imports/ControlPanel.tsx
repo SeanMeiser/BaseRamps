@@ -535,6 +535,8 @@ function ColorInput({ hue, chroma, lightness, opacity, onColorChange, onOpacityC
             <div className="content-stretch flex flex-col items-center justify-center px-[8px] xl:px-[12px] 2xl:px-[16px] relative w-full">
               <input
                 value={hex}
+                onFocus={(e: React.FocusEvent<HTMLInputElement>) => e.target.select()}
+                onClick={(e: React.MouseEvent<HTMLInputElement>) => e.currentTarget.select()}
                 onChange={handleHexChange}
                 className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[#18180f] text-[14px] xl:text-[17px] 2xl:text-[21.33px] w-full bg-transparent outline-none border-none text-center uppercase"
               />
@@ -549,6 +551,8 @@ function ColorInput({ hue, chroma, lightness, opacity, onColorChange, onOpacityC
         <div className="content-stretch flex gap-[8px] items-center justify-center px-[8px] xl:px-[12px] 2xl:px-[16px] relative shrink-0" data-name="Opacity">
           <input
             value={localOpacity}
+            onFocus={(e: React.FocusEvent<HTMLInputElement>) => e.target.select()}
+            onClick={(e: React.MouseEvent<HTMLInputElement>) => e.currentTarget.select()}
             onChange={handleOpacityInputChange}
             onBlur={handleOpacityBlur}
             onKeyDown={handleOpacityKeyDown}
