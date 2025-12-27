@@ -1388,7 +1388,7 @@ function PaletteArea({
     >
       <div
         onClick={(e) => { e.stopPropagation(); onSelect('system'); }}
-        className="w-full cursor-pointer"
+        className={`w-full cursor-pointer sticky top-0 z-50 ${selectedId === 'system' ? 'bg-[#e6e6e6]' : 'bg-[#f5f5f5]'}`}
       >
         <SystemRail min={min} max={max} steps={steps} curve={curve} isSelected={selectedId === 'system'} />
       </div>
@@ -1541,13 +1541,15 @@ function Global() {
 
   const handleAddPalette = () => {
     const newId = `palette-${Date.now()}`;
+    const lastPalette = palettes[palettes.length - 1];
+
     const newPalette: PaletteData = {
       id: newId,
       name: "New Ramp",
-      hue: 0,
-      chroma: 0.1,
-      lightness: 0.5,
-      opacity: 100
+      hue: lastPalette?.hue ?? 0,
+      chroma: lastPalette?.chroma ?? 0.1,
+      lightness: lastPalette?.lightness ?? 0.5,
+      opacity: lastPalette?.opacity ?? 100
     };
     setPalettes([...palettes, newPalette]);
     setSelectedId(newId);
