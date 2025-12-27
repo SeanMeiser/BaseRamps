@@ -24,25 +24,29 @@ export default function OKLrCHPicker({ hue, lightness, chroma, railLightnesses, 
     // Memoize to avoid re-calculation on every render frame
     const boundary = useMemo(() => getGamutBoundary(hue, 50), [hue]);
 
-    // Find max chroma across all lightness values for scaling
-    // Explicitly type 'p' just in case, though it should infer
-    const maxChroma = useMemo(() => Math.max(...boundary.map((p: { c: number }) => p.c), 0.001), [boundary]);
+    // Use a fixed maximum chroma for consistent scaling across all hues
+    // This prevents the handle from jumping when changing hues if chroma stays the same
+    // 0.37 is chosen as it covers most of the sRGB gamut's chroma range
+    const FIXED_MAX_CHROMA = 0.37;
 
-    // Convert OKLCH coordinates to canvas coordinates
+    // Find the actual max chroma for this hue (for gamut checking)
+    const actualMaxChroma = useMemo(() => Math.max(...boundary.map((p: { c: number }) => p.c), 0.001), [boundary]);
+
+    // Convert OKLCH coordinates to canvas coordinates (using fixed scale)
     const toCanvasCoords = useCallback((l: number, c: number) => {
         const { width, height } = dimensions;
-        const x = (c / maxChroma) * width;
+        const x = (c / FIXED_MAX_CHROMA) * width;
         const y = (1 - l) * height; // Invert Y so high L is at top
         return { x, y };
-    }, [dimensions, maxChroma]);
+    }, [dimensions]);
 
-    // Convert canvas coordinates to OKLCH coordinates
+    // Convert canvas coordinates to OKLCH coordinates (using fixed scale)
     const fromCanvasCoords = useCallback((x: number, y: number) => {
         const { width, height } = dimensions;
-        const c = (x / width) * maxChroma;
+        const c = (x / width) * FIXED_MAX_CHROMA;
         const l = 1 - (y / height); // Invert Y
         return { l, c };
-    }, [dimensions, maxChroma]);
+    }, [dimensions]);
 
     // Update gradient cache when hue or dimensions change
     useEffect(() => {
@@ -82,7 +86,7 @@ export default function OKLrCHPicker({ hue, lightness, chroma, railLightnesses, 
             const l = 1 - (y / height);
 
             for (let x = 0; x < width; x++) {
-                const c = (x / width) * maxChroma;
+                const c = (x / width) * FIXED_MAX_CHROMA;
 
                 // Convert to RGB
                 const rgb = toRgb({ mode: 'oklch', l, c, h: hue });
@@ -113,7 +117,7 @@ export default function OKLrCHPicker({ hue, lightness, chroma, railLightnesses, 
         ctx.beginPath();
         boundary.forEach((point: { l: number, c: number }, i: number) => {
             // Scale points to physical pixels
-            const px = (point.c / maxChroma) * width;
+            const px = (point.c / FIXED_MAX_CHROMA) * width;
             const py = (1 - point.l) * height;
             if (i === 0) ctx.moveTo(px, py);
             else ctx.lineTo(px, py);
@@ -130,7 +134,7 @@ export default function OKLrCHPicker({ hue, lightness, chroma, railLightnesses, 
         // Reset composite operation
         ctx.globalCompositeOperation = 'source-over';
 
-    }, [hue, dimensions, maxChroma, boundary]);
+    }, [hue, dimensions, boundary]);
 
     // Main Render Loop
     useEffect(() => {
@@ -226,7 +230,7 @@ export default function OKLrCHPicker({ hue, lightness, chroma, railLightnesses, 
         const { c, l } = fromCanvasCoords(x, y);
 
         // Clamp chroma to valid range
-        const clampedC = Math.max(0, Math.min(maxChroma, c));
+        const clampedC = Math.max(0, Math.min(FIXED_MAX_CHROMA, c));
 
         // Snap lightness to nearest rail value
         // Convert railLightnesses (HSL 0-100) to OKLCH (0-1) for comparison
@@ -245,7 +249,7 @@ export default function OKLrCHPicker({ hue, lightness, chroma, railLightnesses, 
         }
 
         onChange(clampedC, nearestL);
-    }, [fromCanvasCoords, maxChroma, railLightnesses, onChange]);
+    }, [fromCanvasCoords, railLightnesses, onChange]);
 
     const handleUp = useCallback(() => {
         isDragging.current = false;
