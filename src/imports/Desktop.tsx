@@ -815,9 +815,9 @@ import RampControlPanel from "./ControlPanel";
 export type PaletteData = {
   id: string;
   name: string;
-  hue: number;
-  saturation: number;
-  lightness: number;
+  hue: number;        // OKLCH hue (0-360)
+  chroma: number;     // OKLCH chroma (0-0.4)
+  lightness: number;  // OKLCH lightness (0-1)
   opacity: number;
 };
 
@@ -1165,7 +1165,7 @@ function Swatch({ color, lValue, isAnchor = false }: { color: string; lValue: nu
   );
 }
 
-function Frame3({ min, max, steps, curve, hue = 0, saturation = 0, lightness = 50, opacity = 100 }: { min: number; max: number; steps: number; curve: Curve; hue?: number; saturation?: number; lightness?: number; opacity?: number }) {
+function Frame3({ min, max, steps, curve, hue = 0, chroma = 0, lightness = 0.5, opacity = 100 }: { min: number; max: number; steps: number; curve: Curve; hue?: number; chroma?: number; lightness?: number; opacity?: number }) {
   const getLValue = (index: number) => {
     if (steps <= 1) return max;
     const x = index / (steps - 1);
@@ -1175,7 +1175,7 @@ function Frame3({ min, max, steps, curve, hue = 0, saturation = 0, lightness = 5
   };
 
   const railLightnesses = Array.from({ length: steps }).map((_, i) => getLValue(i));
-  const { colors: rampColors, warning, anchorIndex } = generateOklchRamp(hue, saturation, lightness, railLightnesses);
+  const { colors: rampColors, warning, anchorIndex } = generateOklchRamp(hue, chroma, lightness, railLightnesses);
 
 
   return (
@@ -1216,7 +1216,6 @@ function AddRampButton({ onClick }: { onClick: () => void }) {
         <Plus />
         <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">Add Ramp</p>
       </div>
-      <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_1px] border-solid inset-0 pointer-events-none" />
     </div>
   );
 }
@@ -1229,7 +1228,7 @@ function PaletteRow({
   steps,
   curve,
   hue,
-  saturation,
+  chroma,
   lightness,
   opacity,
   isSelected,
@@ -1244,7 +1243,7 @@ function PaletteRow({
   steps: number;
   curve: Curve;
   hue: number;
-  saturation: number;
+  chroma: number;
   lightness: number;
   opacity: number;
   isSelected: boolean;
@@ -1261,7 +1260,7 @@ function PaletteRow({
       <div className="flex flex-col justify-center size-full">
         <div className="content-stretch flex flex-col gap-[8px] items-start justify-center px-[24px] pt-[6px] pb-[12px] relative w-full">
           <PaletteHeader name={name} onChange={onChange} onDelete={onDelete} />
-          <Frame3 min={min} max={max} steps={steps} curve={curve} hue={hue} saturation={saturation} lightness={lightness} opacity={opacity} />
+          <Frame3 min={min} max={max} steps={steps} curve={curve} hue={hue} chroma={chroma} lightness={lightness} opacity={opacity} />
         </div>
       </div>
     </div>
@@ -1278,21 +1277,23 @@ function Neutral({ min, max, steps, curve, isSelected, onSelect, onChange }: {
   onChange: (name: string) => void;
 }) {
   return (
-    <PaletteRow
-      id="neutral"
-      name="Neutral"
-      min={min}
-      max={max}
-      steps={steps}
-      curve={curve}
-      hue={0}
-      saturation={0}
-      lightness={50}
-      opacity={100}
-      isSelected={isSelected}
-      onSelect={onSelect}
-      onChange={onChange}
-    />
+    <div className="w-full">
+      <PaletteRow
+        id="neutral"
+        name="Neutral"
+        min={min}
+        max={max}
+        steps={steps}
+        curve={curve}
+        hue={0}
+        chroma={0}
+        lightness={50}
+        opacity={100}
+        isSelected={isSelected}
+        onSelect={onSelect}
+        onChange={onChange}
+      />
+    </div>
   );
 }
 
@@ -1342,7 +1343,7 @@ function Palettes({
           steps={steps}
           curve={curve}
           hue={palette.hue}
-          saturation={palette.saturation}
+          chroma={palette.chroma}
           lightness={palette.lightness}
           opacity={palette.opacity}
           isSelected={selectedId === palette.id}
@@ -1459,7 +1460,7 @@ function Global() {
     id: 'neutral',
     name: 'Neutral',
     hue: 0,
-    saturation: 0,
+    chroma: 0,
     lightness: 50,
     opacity: 100
   });
@@ -1483,8 +1484,8 @@ function Global() {
       id: newId,
       name: "New Ramp",
       hue: 0,
-      saturation: 100,
-      lightness: 50,
+      chroma: 0.1,
+      lightness: 0.5,
       opacity: 100
     };
     setPalettes([...palettes, newPalette]);

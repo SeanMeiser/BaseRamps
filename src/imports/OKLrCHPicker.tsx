@@ -9,10 +9,11 @@ interface OKLrCHPickerProps {
     hue: number;              // Current hue (0-360)
     lightness: number;        // Target lightness from system (0-1 OKLCH)
     chroma: number;           // Current chroma (0-0.4)
+    railLightnesses: number[]; // Discrete lightness steps from system (HSL 0-100)
     onChange: (c: number, l: number) => void;
 }
 
-export default function OKLrCHPicker({ hue, lightness, chroma, onChange }: OKLrCHPickerProps) {
+export default function OKLrCHPicker({ hue, lightness, chroma, railLightnesses, onChange }: OKLrCHPickerProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const isDragging = useRef(false);
@@ -152,17 +153,32 @@ export default function OKLrCHPicker({ hue, lightness, chroma, onChange }: OKLrC
 
         const rect = containerRef.current.getBoundingClientRect();
         const x = Math.max(0, Math.min(dimensions.width, e.clientX - rect.left));
-        // Don't use y - lightness is locked!
+        const y = Math.max(0, Math.min(dimensions.height, e.clientY - rect.top));
 
-        // Only derive chroma from x position
-        const { c } = fromCanvasCoords(x, 0); // Y doesn't matter, we only care about X for chroma
+        // Derive both chroma and lightness from pointer position
+        const { c, l } = fromCanvasCoords(x, y);
 
         // Clamp chroma to valid range
         const clampedC = Math.max(0, Math.min(maxChroma, c));
 
-        // Keep lightness locked to the prop value
-        onChange(clampedC, lightness);
-    }, [dimensions, fromCanvasCoords, maxChroma, lightness, onChange]);
+        // Snap lightness to nearest rail value
+        // Convert railLightnesses (HSL 0-100) to OKLCH (0-1) for comparison
+        const railsInOklch = railLightnesses.map(hslL => hslL / 100);
+
+        // Find nearest rail lightness
+        let nearestL = railsInOklch[0];
+        let minDiff = Math.abs(l - nearestL);
+
+        for (const railL of railsInOklch) {
+            const diff = Math.abs(l - railL);
+            if (diff < minDiff) {
+                minDiff = diff;
+                nearestL = railL;
+            }
+        }
+
+        onChange(clampedC, nearestL);
+    }, [dimensions, fromCanvasCoords, maxChroma, railLightnesses, onChange]);
 
     const handleUp = useCallback(() => {
         isDragging.current = false;

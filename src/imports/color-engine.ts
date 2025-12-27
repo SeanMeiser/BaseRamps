@@ -31,13 +31,18 @@ function applyWarmthCorrection(originalHue: number | undefined, currentLightness
 }
 
 export function generateOklchRamp(
-  hue: number,
-  saturation: number,
-  inputLightness: number,
-  railLightnesses: number[]
+  hue: number,          // OKLCH hue (0-360)
+  chroma: number,       // OKLCH chroma (0-0.4)
+  inputLightness: number, // OKLCH lightness (0-1)
+  railLightnesses: number[]  // HSL lightness percentages (0-100)
 ): { colors: string[]; warning: boolean; anchorIndex: number } {
-  // Convert Input Color (HSL) to OKLCH to extract constant Chroma and Hue
-  const inputColor = getOklchColor(hue, saturation, inputLightness);
+  // Input is already in OKLCH - no conversion needed!
+  const inputColor = {
+    mode: 'oklch' as const,
+    l: inputLightness,
+    c: chroma,
+    h: hue
+  };
 
   // Chroma Floor: If chroma is < 0.02 (effectively gray), treat as pure neutral
   // Skip warmth correction and gamut checks to prevent floating-point warnings on grayscale

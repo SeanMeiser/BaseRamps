@@ -8,12 +8,14 @@ import { generateOklchRamp } from './color-engine';
 
 const toOklch = converter('oklch');
 
+import { findMaxChroma } from '../lib/gamut/oklchGamut';
+
 type PaletteData = {
   id: string;
   name: string;
-  hue: number;
-  saturation: number;
-  lightness: number;
+  hue: number;        // OKLCH hue (0-360)
+  chroma: number;     // OKLCH chroma (0-0.4)
+  lightness: number;  // OKLCH lightness (0-1)
   opacity: number;
 };
 
@@ -91,7 +93,7 @@ function hexToHsl(hex: string): { h: number, s: number, l: number } | null {
 
 function ControlPanelHeader() {
   return (
-    <div className="bg-[#f5f5f5] relative shrink-0 w-full" data-name="ControlPanelHeader">
+    <div className="bg-[#f5f5f5] h-[62px] relative shrink-0 w-full" data-name="ControlPanelHeader">
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_1px_1px_0px] border-solid inset-0 pointer-events-none" />
       <div className="flex flex-row items-center w-full">
         <div className="content-stretch flex items-center px-[16px] pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] relative w-full">
@@ -131,7 +133,7 @@ function ColorScaleName({ name, onChange }: { name: string; onChange: (name: str
         <input
           autoFocus
           onFocus={(e) => e.target.select()}
-          className="basis-0 font-['PP_Neue_Montreal:Book',sans-serif] grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#18180f] text-[30px] xl:text-[37.9px] 2xl:text-[47px] bg-transparent outline-none border-none p-0"
+          className="basis-0 font-['PP_Neue_Montreal:Book',sans-serif] grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#18180f] text-[48px] xl:text-[60px] 2xl:text-[72px] bg-transparent outline-none border-none p-0"
           value={tempName}
           onChange={(e) => setTempName(e.target.value)}
           onBlur={handleBlur}
@@ -139,7 +141,7 @@ function ColorScaleName({ name, onChange }: { name: string; onChange: (name: str
           onClick={(e) => e.stopPropagation()}
         />
       ) : (
-        <p className="basis-0 font-['PP_Neue_Montreal:Book',sans-serif] grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#18180f] text-[30px] xl:text-[37.9px] 2xl:text-[47px] cursor-pointer"
+        <p className="basis-0 font-['PP_Neue_Montreal:Book',sans-serif] grow leading-[normal] min-h-px min-w-px not-italic relative shrink-0 text-[#18180f] text-[48px] xl:text-[60px] 2xl:text-[72px] cursor-pointer"
           onClick={handleClick}
         >
           {name}
@@ -149,22 +151,20 @@ function ColorScaleName({ name, onChange }: { name: string; onChange: (name: str
   );
 }
 
-function ColorPicker({ hue, saturation, lightness, onChange, min, max, steps, curve }: {
-  hue: number;
-  saturation: number;
-  lightness: number;
-  onChange: (s: number, l: number) => void;
+function ColorPicker({ hue, chroma, lightness, onChange, min, max, steps, curve }: {
+  hue: number;        // OKLCH hue (0-360)
+  chroma: number;     // OKLCH chroma (0-0.4)
+  lightness: number;  // OKLCH lightness (0-1)
+  onChange: (c: number, l: number) => void;
   min: number;
   max: number;
   steps: number;
   curve: Curve;
 }) {
-  // Convert current HSL to OKLCH to get chroma AND hue in OKLCH space
-  const currentHsl = { mode: 'hsl' as const, h: hue, s: saturation / 100, l: lightness / 100 };
-  const currentOklch = toOklch(currentHsl);
-  const currentChroma = currentOklch?.c || 0;
-  const currentLightness = currentOklch?.l || 0.5;
-  const currentOklchHue = currentOklch?.h || hue; // Extract OKLCH hue
+  // Values are already in OKLCH space - no conversion needed!
+  const currentChroma = chroma;
+  const currentLightness = lightness;
+  const currentOklchHue = hue;
 
   // Calculate the anchor lightness (target lightness for system rail)
   const getLValue = (index: number) => {
@@ -194,10 +194,13 @@ function ColorPicker({ hue, saturation, lightness, onChange, min, max, steps, cu
   const railLightnesses = Array.from({ length: steps }).map((_, i) => getLValue(i));
 
   // Find the anchor index (closest rail lightness to user's input)
+  // IMPORTANT: lightness is in OKLCH (0-1), railLightnesses are in HSL (0-100)
+  // Convert OKLCH to HSL percentage for comparison
+  const lightnessAsHSL = lightness * 100;
   let anchorIndex = 0;
-  let smallestDiff = Math.abs(railLightnesses[0] - lightness);
+  let smallestDiff = Math.abs(railLightnesses[0] - lightnessAsHSL);
   for (let i = 1; i < railLightnesses.length; i++) {
-    const diff = Math.abs(railLightnesses[i] - lightness);
+    const diff = Math.abs(railLightnesses[i] - lightnessAsHSL);
     if (diff < smallestDiff) {
       smallestDiff = diff;
       anchorIndex = i;
@@ -205,24 +208,13 @@ function ColorPicker({ hue, saturation, lightness, onChange, min, max, steps, cu
   }
 
   // Get the target lightness in OKLCH space (0-1)
-  const targetLightnessHSL = railLightnesses[anchorIndex];
-  const targetColor = { mode: 'hsl' as const, h: hue, s: saturation / 100, l: targetLightnessHSL / 100 };
-  const targetOklch = toOklch(targetColor);
-  const targetLightness = targetOklch?.l || 0.5;
+  // railLightnesses are in HSL percentage (0-100), convert to OKLCH 0-1
+  const targetLightness = railLightnesses[anchorIndex] / 100;
 
   // Handle changes from OKLrCHPicker (receives chroma and lightness in OKLCH space)
   const handleOklchChange = (c: number, l: number) => {
-    // Convert OKLCH back to HSL for state management
-    // IMPORTANT: Use the OKLCH hue, not HSL hue!
-    const toHsl = converter('hsl');
-    const oklchColor = { mode: 'oklch' as const, l, c, h: currentOklchHue };
-    const hslColor = toHsl(oklchColor);
-
-    if (hslColor && hslColor.s !== undefined && hslColor.l !== undefined) {
-      const newS = hslColor.s * 100;
-      const newL = hslColor.l * 100;
-      onChange(newS, newL);
-    }
+    // State is already OKLCH - just pass values through
+    onChange(c, l);
   };
 
   return (
@@ -231,6 +223,7 @@ function ColorPicker({ hue, saturation, lightness, onChange, min, max, steps, cu
         hue={currentOklchHue}
         lightness={targetLightness}
         chroma={currentChroma}
+        railLightnesses={railLightnesses}
         onChange={handleOklchChange}
       />
     </div>
@@ -309,7 +302,7 @@ function HueBar({ hue, onChange }: { hue: number; onChange: (h: number) => void 
   );
 }
 
-function OpacityBar({ opacity, hue, saturation, lightness, onChange }: { opacity: number; hue: number; saturation: number; lightness: number; onChange: (o: number) => void }) {
+function OpacityBar({ opacity, hue, chroma, lightness, onChange }: { opacity: number; hue: number; chroma: number; lightness: number; onChange: (o: number) => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
 
@@ -338,7 +331,14 @@ function OpacityBar({ opacity, hue, saturation, lightness, onChange }: { opacity
     window.addEventListener("pointerup", handleUp);
   };
 
-  const color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  // Convert OKLCH to HSL for visual display
+  const toHsl = converter('hsl');
+  const oklchColor = { mode: 'oklch' as const, l: lightness, c: chroma, h: hue };
+  const hslColor = toHsl(oklchColor);
+  const hslHue = hslColor?.h || 0;
+  const hslSat = (hslColor?.s || 0) * 100;
+  const hslLight = (hslColor?.l || 0) * 100;
+  const color = `hsl(${hslHue}, ${hslSat}%, ${hslLight}%)`;
 
   return (
     <div
@@ -403,9 +403,9 @@ function InputTypeDropDown() {
   );
 }
 
-function ColorInput({ hue, saturation, lightness, opacity, onColorChange, onOpacityChange, min, max, steps, curve }: {
-  hue: number; saturation: number; lightness: number; opacity: number;
-  onColorChange: (h: number, s: number, l: number) => void;
+function ColorInput({ hue, chroma, lightness, opacity, onColorChange, onOpacityChange, min, max, steps, curve }: {
+  hue: number; chroma: number; lightness: number; opacity: number;
+  onColorChange: (h: number, c: number, l: number) => void;
   onOpacityChange: (o: number) => void;
   min: number;
   max: number;
@@ -440,7 +440,7 @@ function ColorInput({ hue, saturation, lightness, opacity, onColorChange, onOpac
     const railLightnesses = Array.from({ length: steps }).map((_, i) => getLValue(i));
 
     // Run the color through the system engine
-    const { colors } = generateOklchRamp(hue, saturation, lightness, railLightnesses);
+    const { colors } = generateOklchRamp(hue, chroma, lightness, railLightnesses);
 
     // Find the anchor index (closest to user's input)
     let anchorIndex = 0;
@@ -477,7 +477,7 @@ function ColorInput({ hue, saturation, lightness, opacity, onColorChange, onOpac
 
   useEffect(() => {
     setHex(getSystemSnappedHex());
-  }, [hue, saturation, lightness, opacity]);
+  }, [hue, chroma, lightness, opacity]);
 
   useEffect(() => {
     setLocalOpacity(String(opacity));
@@ -486,9 +486,19 @@ function ColorInput({ hue, saturation, lightness, opacity, onColorChange, onOpac
   const handleHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setHex(val);
-    const hsl = hexToHsl(val);
-    if (hsl) {
-      onColorChange(hsl.h, hsl.s, hsl.l);
+    // Convert hex → RGB → OKLCH
+    const rgb = hexToRgb(val);
+    if (rgb) {
+      const [r, g, b] = rgb;
+      const rgbColor = { mode: 'rgb' as const, r: r / 255, g: g / 255, b: b / 255 };
+      const oklch = toOklch(rgbColor);
+      if (oklch) {
+        // Extract OKLCH values
+        const h = oklch.h || 0;
+        const c = oklch.c || 0;
+        const l = oklch.l || 0.5;
+        onColorChange(h, c, l);
+      }
     }
   };
 
@@ -547,10 +557,10 @@ function ColorInput({ hue, saturation, lightness, opacity, onColorChange, onOpac
   );
 }
 
-function Frame1({ hue, saturation, lightness, opacity, onHueChange, onColorChange, onOpacityChange, min, max, steps, curve }: {
-  hue: number; saturation: number; lightness: number; opacity: number;
+function Frame1({ hue, chroma, lightness, opacity, onHueChange, onColorChange, onOpacityChange, min, max, steps, curve }: {
+  hue: number; chroma: number; lightness: number; opacity: number;
   onHueChange: (h: number) => void;
-  onColorChange: (h: number, s: number, l: number) => void;
+  onColorChange: (h: number, c: number, l: number) => void;
   onOpacityChange: (o: number) => void;
   min: number;
   max: number;
@@ -561,10 +571,10 @@ function Frame1({ hue, saturation, lightness, opacity, onHueChange, onColorChang
     <div className="content-stretch flex gap-[24px] items-stretch relative shrink-0 w-full">
       <div className="basis-0 content-stretch flex flex-col gap-[24px] grow items-start min-h-px min-w-px relative shrink-0 justify-center">
         <HueBar hue={hue} onChange={onHueChange} />
-        <OpacityBar opacity={opacity} hue={hue} saturation={saturation} lightness={lightness} onChange={onOpacityChange} />
+        <OpacityBar opacity={opacity} hue={hue} chroma={chroma} lightness={lightness} onChange={onOpacityChange} />
         <ColorInput
           hue={hue}
-          saturation={saturation}
+          chroma={chroma}
           lightness={lightness}
           opacity={opacity}
           onColorChange={onColorChange}
@@ -588,12 +598,17 @@ function ControlsNewColorScale({ palette, onChange, min, max, steps, curve }: {
   curve: Curve;
 }) {
   const handleNameChange = (name: string) => onChange({ name });
-  const handleColorChange = (s: number, l: number) => onChange({ saturation: s, lightness: l });
-  const handleHueChange = (hue: number) => onChange({ hue });
+  const handleColorChange = (c: number, l: number) => onChange({ chroma: c, lightness: l });
+  const handleHueChange = (newHue: number) => {
+    // When hue changes, preserve chroma if possible, or clamp to new gamut
+    const maxChromaAtCurrentLightness = findMaxChroma(palette.lightness, newHue);
+    const clampedChroma = Math.min(palette.chroma, maxChromaAtCurrentLightness);
+    onChange({ hue: newHue, chroma: clampedChroma });
+  };
   const handleOpacityChange = (opacity: number) => onChange({ opacity });
 
   // New handler for full color change from Hex input
-  const handleFullColorChange = (h: number, s: number, l: number) => onChange({ hue: h, saturation: s, lightness: l });
+  const handleFullColorChange = (h: number, c: number, l: number) => onChange({ hue: h, chroma: c, lightness: l });
 
   return (
     <div className="bg-[#f5f5f5] flex-1 relative w-full overflow-auto" data-name="Controls--NewColorScale">
@@ -603,7 +618,7 @@ function ControlsNewColorScale({ palette, onChange, min, max, steps, curve }: {
           <ColorScaleName name={palette.name} onChange={handleNameChange} />
           <ColorPicker
             hue={palette.hue}
-            saturation={palette.saturation}
+            chroma={palette.chroma}
             lightness={palette.lightness}
             onChange={handleColorChange}
             min={min}
@@ -613,7 +628,7 @@ function ControlsNewColorScale({ palette, onChange, min, max, steps, curve }: {
           />
           <Frame1
             hue={palette.hue}
-            saturation={palette.saturation}
+            chroma={palette.chroma}
             lightness={palette.lightness}
             opacity={palette.opacity}
             onHueChange={handleHueChange}
