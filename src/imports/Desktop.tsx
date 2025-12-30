@@ -489,7 +489,6 @@ function Stepper1({ steps, onChange }: { steps: number; onChange: (val: number) 
 
   return (
     <div className="content-stretch flex items-center justify-between relative shrink-0 w-full" data-name="Stepper">
-      <div aria-hidden="true" className="absolute border border-[#c4c4c4] border-solid inset-0 pointer-events-none" />
       <Text
         text={isEditing ? inputValue : String(steps)}
         onClick={handleTextClick}
@@ -501,6 +500,7 @@ function Stepper1({ steps, onChange }: { steps: number; onChange: (val: number) 
       <div className="flex flex-row items-center self-stretch">
         <Stepper onDecrement={handleDecrement} onIncrement={handleIncrement} />
       </div>
+      <div aria-hidden="true" className="absolute border border-[#c4c4c4] border-solid inset-0 pointer-events-none" />
     </div>
   );
 }
@@ -546,11 +546,11 @@ function Stepper2() {
 function DropDown({ label }: { label: string }) {
   return (
     <div className="content-stretch flex items-center justify-between relative shrink-0 w-full" data-name="DropDown">
-      <div aria-hidden="true" className="absolute border border-[#c4c4c4] border-solid inset-0 pointer-events-none" />
       <Text text={label} />
       <div className="flex flex-row items-center self-stretch">
         <Stepper2 />
       </div>
+      <div aria-hidden="true" className="absolute border border-[#c4c4c4] border-solid inset-0 pointer-events-none" />
     </div>
   );
 }
@@ -606,7 +606,6 @@ function LightnessCurvePresets({ curve, onChange }: { curve: Curve; onChange: (c
           className="content-stretch flex items-center justify-between relative shrink-0 w-full cursor-pointer transition-all hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98]"
           onClick={() => setIsOpen(!isOpen)}
         >
-          <div aria-hidden="true" className="absolute border border-[#c4c4c4] border-solid inset-0 pointer-events-none" />
           <div className="content-stretch flex flex-col items-start justify-center pb-[12px] pt-[8px] px-[16px] relative shrink-0 flex-1">
             <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px]">{label}</p>
           </div>
@@ -618,6 +617,7 @@ function LightnessCurvePresets({ curve, onChange }: { curve: Curve; onChange: (c
               </div>
             </div>
           </div>
+          <div aria-hidden="true" className="absolute border border-[#c4c4c4] border-solid inset-0 pointer-events-none" />
         </div>
 
         {/* Dropdown Menu */}
@@ -906,8 +906,8 @@ function GithubButton() {
       className="content-stretch flex items-center justify-center pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] px-[16px] relative shrink-0 cursor-pointer transition-all hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98]"
       data-name="GithubButton"
     >
-      <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_0px_1px] border-solid inset-0 pointer-events-none" />
       <Github className="relative shrink-0 text-[#7a7a7a] hover:text-[#18180f] transition-colors" size={16} />
+      <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_0px_1px] border-solid inset-0 pointer-events-none" />
     </a>
   );
 }
