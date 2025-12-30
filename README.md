@@ -1,61 +1,97 @@
-# Lightness Lock
+# BaseRamps
 
-**A System-First OKLCH Color Palette Generator.**
+**A System-First OKLCH Color Palette Generator**
 
-Most color tools are *generative*: you pick a color, and they generate a scale around it.
-**Lightness Lock** is *structural*: you define a rigid Lightness structure (the "Rail"), and force colors to inhabit it.
+Most color tools are *generative*: you pick a color, and they generate a scale around it.  
+**BaseRamps** is *structural*: you define a rigid lightness structure (the "Rail"), and force colors to inhabit it.
 
-![Project Screenshot](./public/screenshot.png)
+![BaseRamps Screenshot](./public/screenshot.png)
+
+---
 
 ## 📐 The Philosophy
 
 In modern design systems, **Perceptual Uniformity** is not enough. We need **Functional Symmetry**.
 
-If `Blue-500` and `Yellow-500` share the same token name, they should function identically in the UI. They should have the exact same contrast ratio against white.
+If `Blue-500` and `Yellow-500` share the same token name, they should function identically in the UI—with the exact same contrast ratio against white.
 
-Standard tools fail at this because they preserve the input color at the cost of the system structure (often forcing a bright yellow into a "mid-tone" slot, breaking accessibility).
+Standard tools fail at this because they preserve the input color at the cost of system structure (often forcing a bright yellow into a "mid-tone" slot, breaking accessibility).
 
-**Lightness Lock solves this by:**
-1.  **Defining the Rail:** A global source of truth for Lightness values (e.g., `L-98`, `L-50`, `L-10`).
-2.  **Snapping Inputs:** When you input a color, the system calculates its lightness and "snaps" it to the nearest valid step on the rail.
-3.  **Interpolating:** The rest of the palette is generated relative to that snapped anchor, ensuring strict adherence to the global lightness curve.
+**BaseRamps solves this by:**
+
+1. **Defining the Rail** — A global source of truth for lightness values (e.g., `L-98`, `L-50`, `L-10`)
+2. **Snapping Inputs** — When you input a color, the system calculates its lightness and snaps it to the nearest valid step
+3. **Interpolating** — The rest of the palette generates relative to that anchor, ensuring strict adherence to the global lightness curve
+
+---
 
 ## ✨ Features
 
-* **Global Lightness Rail:** Change the system physics once (e.g., adjust the easing curve), and every palette updates instantly.
-* **Snap-to-Scale Logic:** Input any hex code, and the tool automatically assigns it to the correct lightness step.
-* **Gamut Protection:** Uses `culori`'s Oklch-to-RGB gamut mapping to prevent "neon clipping" artifacts while prioritizing lightness preservation.
-* **Warmth Shield:** Automatically rotates Yellow/Orange hues toward Red in darker shades to prevent the "olive/mud" effect common in algorithmic palettes.
-* **Contrast Locking:** Calculate accessibility once. If Step 500 passes AA, *all* Step 500s pass AA.
-* **Bezier Distribution:** Custom "Signal Visualizer" to tune the easing of your lightness steps (Linear, Ease-In, Ease-Out).
-* **Smart Export:** One-click generation of:
-    * Tailwind Config (`theme.extend.colors`)
-    * CSS Variables (`:root`)
-    * Raw JSON tokens
+### Color Generation
+- **OKLCH Color Space** — True perceptual uniformity powered by [Culori](https://culorijs.org/)
+- **Global Lightness Rail** — Change the system physics once, and every palette updates instantly
+- **Snap-to-Scale Logic** — Input any hex code; the tool automatically assigns it to the correct lightness step
+- **Anchor Indicator** — Visual marker showing which swatch represents your input color
+
+### Color Science
+- **Gamut Protection** — sRGB gamut mapping prevents "neon clipping" while prioritizing lightness preservation
+- **Warmth Correction** — Automatically rotates yellow/orange hues toward red in darker shades to prevent the "olive/mud" effect
+- **Contrast Locking** — Calculate accessibility once. If Step 500 passes AA, *all* Step 500s pass AA
+
+### System Controls
+- **Adjustable Lightness Range** — Interactive dual-handle slider for min/max lightness
+- **Configurable Steps** — 1–20 swatches per ramp
+- **Bezier Curve Distribution** — Presets for Uniform, Mid-Tone Focus, Shade Focus, and Tint Focus
+
+### Export
+- **Tailwind Config** — `theme.extend.colors` output
+- **CSS Variables** — `:root` custom properties
+- **Raw JSON** — Design token format
+
+---
 
 ## 🛠️ Tech Stack
 
-* **Framework:** React + Vite
-* **State Management:** Zustand (Separating System Settings from Palette State)
-* **Color Math:** [Culori](https://culorijs.org/)
-* **Styling:** Tailwind CSS + clsx
-* **Easing:** `bezier-easing`
+| Layer | Technology |
+|-------|------------|
+| Framework | React + Vite |
+| State | Zustand |
+| Color Math | [Culori](https://culorijs.org/) |
+| Styling | Tailwind CSS |
+| Easing | `bezier-easing` |
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-* Node.js 18+
+- Node.js 18+
 
 ### Installation
 
 ```bash
-# 1. Clone the repository
-git clone [https://github.com/SeanMeiser/BaseRamps)
+# Clone the repository
+git clone https://github.com/SeanMeiser/BaseRamps
 
-# 2. Open it in your favorite code editor
+# Navigate to the directory
+cd BaseRamps
 
-# 3. Install dependencies
+# Install dependencies
 npm install
 
-# 4. Start the development server
+# Start the development server
 npm run dev
+```
+
+---
+
+## 📄 License
+
+MIT
+
+---
+
+## 🙏 Acknowledgments
+
+- [Culori](https://culorijs.org/) for OKLCH color math
+- [Radix UI](https://www.radix-ui.com/) for accessible primitives

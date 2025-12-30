@@ -1,7 +1,7 @@
 import svgPaths from "./svg-jpfemsx01m";
 import clsx from "clsx";
 import imgExampleGrid from "figma:asset/c4d507563c5edd8adffbf8c880bffd300fe93c4a.png";
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, Github, ArrowUpRight } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Toaster, toast } from "sonner@2.0.3";
 type Curve = {
@@ -384,7 +384,7 @@ type MinusProps = {
 function Minus({ onClick }: MinusProps) {
   return (
     <div
-      className="relative shrink-0 size-[32px] xl:size-[40px] 2xl:size-[50px] cursor-pointer hover:bg-[#e6e6e6] active:scale-90 transition-all"
+      className="relative shrink-0 size-[32px] xl:size-[40px] 2xl:size-[50px] cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all"
       data-name="minus"
       onClick={onClick}
     >
@@ -416,7 +416,7 @@ type Plus1Props = {
 function Plus1({ onClick }: Plus1Props) {
   return (
     <div
-      className="content-stretch flex flex-col items-center justify-center overflow-clip px-[3.538px] py-[14.154px] relative shrink-0 size-[32px] xl:size-[40px] 2xl:size-[50px] cursor-pointer hover:bg-[#e6e6e6] active:scale-90 transition-all"
+      className="content-stretch flex flex-col items-center justify-center overflow-clip px-[3.538px] py-[14.154px] relative shrink-0 size-[32px] xl:size-[40px] 2xl:size-[50px] cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all"
       data-name="plus"
       onClick={onClick}
     >
@@ -603,7 +603,7 @@ function LightnessCurvePresets({ curve, onChange }: { curve: Curve; onChange: (c
       <div className="relative w-full" ref={containerRef}>
         {/* Dropdown Trigger */}
         <div
-          className="content-stretch flex items-center justify-between relative shrink-0 w-full cursor-pointer"
+          className="content-stretch flex items-center justify-between relative shrink-0 w-full cursor-pointer transition-all hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98]"
           onClick={() => setIsOpen(!isOpen)}
         >
           <div aria-hidden="true" className="absolute border border-[#c4c4c4] border-solid inset-0 pointer-events-none" />
@@ -629,8 +629,8 @@ function LightnessCurvePresets({ curve, onChange }: { curve: Curve; onChange: (c
                 <div
                   key={preset.name}
                   className={clsx(
-                    "px-[16px] pt-[6px] pb-[8px] cursor-pointer hover:bg-[#f5f5f5] border-b border-[#e6e6e6] last:border-b-0",
-                    isActive && "bg-[#f5f5f5]"
+                    "px-[16px] pt-[6px] pb-[8px] cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all border-b border-[#e6e6e6] last:border-b-0",
+                    isActive && "bg-[#e6e6e6] hover:bg-[#dcdcdc]"
                   )}
                   onClick={(e: MouseEvent) => {
                     e.stopPropagation();
@@ -821,6 +821,34 @@ export type PaletteData = {
   opacity: number;
 };
 
+function CreatorSignature() {
+  return (
+    <div className="mt-auto relative w-full" data-name="CreatorSignature">
+      {/* Right border overlay to match other control blocks */}
+      <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_1px_0px_0px] border-solid inset-0 pointer-events-none z-10" />
+      <div className="px-[24px] py-[24px] border-t border-[#c4c4c4] relative">
+        <p className="font-['JetBrains_Mono:Regular',sans-serif] uppercase text-[10px] xl:text-[11px] tracking-widest text-[#7a7a7a] mb-1">
+          DESIGN & BUILD
+        </p>
+        <div className="flex flex-row items-center justify-between w-full">
+          <a
+            href="https://seanmeiser.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex flex-row items-center gap-1 font-['PP_Neue_Montreal:Book',sans-serif] text-[14px] leading-none text-[#18180f] hover:underline transition-colors w-fit"
+          >
+            <span className="whitespace-nowrap">Sean Meiser</span>
+            <ArrowUpRight size={12} className="opacity-60 shrink-0" />
+          </a>
+          <p className="font-['JetBrains_Mono:Regular',sans-serif] text-[12px] xl:text-[13px] text-[#7a7a7a] opacity-60">
+            v{APP_VERSION}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ControlPanel({ min, max, steps, curve, onRangeChange, onStepsChange, onCurveChange, selectedId, selectedPalette, onPaletteChange }: {
   min: number;
   max: number;
@@ -833,35 +861,54 @@ function ControlPanel({ min, max, steps, curve, onRangeChange, onStepsChange, on
   selectedPalette?: PaletteData;
   onPaletteChange?: (id: string, updates: Partial<PaletteData>) => void;
 }) {
-  if (selectedId !== 'system' && selectedPalette && onPaletteChange) {
-    return (
-      <div className="content-stretch flex flex-col items-start relative shrink-0 w-[22vw] h-screen" data-name="ControlPanel">
-        <RampControlPanel
-          palette={selectedPalette}
-          onChange={(updates) => onPaletteChange(selectedPalette.id, updates)}
-          min={min}
-          max={max}
-          steps={steps}
-          curve={curve}
-        />
-      </div>
-    );
-  }
+  const isRampSelected = selectedId !== 'system' && selectedPalette && onPaletteChange;
 
   return (
-    <div className="content-stretch flex flex-col items-start relative shrink-0 w-[22vw] h-screen" data-name="ControlPanel">
-      <ControlPanelHeader />
-      <ControlsSystem min={min} max={max} steps={steps} curve={curve} onRangeChange={onRangeChange} onStepsChange={onStepsChange} onCurveChange={onCurveChange} />
+    <div className="bg-[#f5f5f5] content-stretch flex flex-col items-start relative shrink-0 w-[22vw] h-screen" data-name="ControlPanel">
+      <div className="flex-1 w-full overflow-hidden flex flex-col">
+        {isRampSelected ? (
+          <RampControlPanel
+            palette={selectedPalette}
+            onChange={(updates) => onPaletteChange(selectedPalette.id, updates)}
+            min={min}
+            max={max}
+            steps={steps}
+            curve={curve}
+          />
+        ) : (
+          <>
+            <ControlPanelHeader />
+            <ControlsSystem
+              min={min}
+              max={max}
+              steps={steps}
+              curve={curve}
+              onRangeChange={onRangeChange}
+              onStepsChange={onStepsChange}
+              onCurveChange={onCurveChange}
+            />
+          </>
+        )}
+      </div>
+      <div className="w-full shrink-0">
+        <CreatorSignature />
+      </div>
     </div>
   );
 }
 
-function Documentation() {
+function GithubButton() {
   return (
-    <div className="content-stretch flex items-center justify-center pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] px-[16px] relative shrink-0" data-name="Documentation">
+    <a
+      href="https://github.com/SeanMeiser/BaseRamps"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="content-stretch flex items-center justify-center pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] px-[16px] relative shrink-0 cursor-pointer transition-all hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98]"
+      data-name="GithubButton"
+    >
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_0px_1px] border-solid inset-0 pointer-events-none" />
-      <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#7a7a7a] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">Documentation</p>
-    </div>
+      <Github className="relative shrink-0 text-[#7a7a7a] hover:text-[#18180f] transition-colors" size={16} />
+    </a>
   );
 }
 
@@ -889,7 +936,7 @@ function Export() {
 function ButtonGroup() {
   return (
     <div className="content-stretch flex items-center justify-end relative shrink-0" data-name="ButtonGroup">
-      <Documentation />
+      <GithubButton />
       <Export />
     </div>
   );
@@ -958,7 +1005,7 @@ function Frame4({ min, max, steps, curve }: { min: number; max: number; steps: n
 
 function SystemRail({ min, max, steps, curve, isSelected }: { min: number; max: number; steps: number; curve: Curve; isSelected: boolean }) {
   return (
-    <div className={`sticky top-0 z-50 relative shrink-0 w-full ${isSelected ? 'bg-[#e6e6e6]' : 'bg-[#f5f5f5]'}`} data-name="SystemRail">
+    <div className={`sticky top-0 z-50 relative shrink-0 w-full bg-transparent`} data-name="SystemRail">
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_1px] border-solid inset-0 pointer-events-none" />
       <div className="flex flex-col justify-center size-full">
         <div className="content-stretch flex flex-col items-start justify-center px-[24px] py-[8px] relative w-full">
@@ -1131,8 +1178,11 @@ function Swatch({ color, lValue, isAnchor = false }: { color: string; lValue: nu
 
   return (
     <div
-      className="aspect-[179.429/179.43] basis-0 grow min-h-px min-w-px shrink-0 relative group cursor-pointer"
-      style={{ backgroundColor: color }}
+      className="basis-0 grow min-h-px min-w-px shrink-0 relative group cursor-pointer"
+      style={{
+        backgroundColor: color,
+        height: 'calc((100vw - 22vw - 96px) / 7)'
+      }}
       data-name="ColorSwatch"
       onClick={handleCopy}
     >
@@ -1209,7 +1259,7 @@ function AddRampButton({ onClick }: { onClick: () => void }) {
   return (
     <div
       onClick={(e) => { e.stopPropagation(); onClick(); }}
-      className="content-stretch flex items-center justify-center py-[24px] relative shrink-0 w-full cursor-pointer hover:bg-[#f5f5f5] transition-colors group"
+      className="content-stretch flex items-center justify-center py-[24px] relative shrink-0 w-full cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all group"
       data-name="AddRamp"
     >
       <div className="flex items-center gap-[8px] opacity-50 group-hover:opacity-100 transition-opacity">
@@ -1234,7 +1284,8 @@ function PaletteRow({
   isSelected,
   onSelect,
   onChange,
-  onDelete
+  onDelete,
+  topPadding
 }: {
   id: string;
   name: string;
@@ -1250,15 +1301,19 @@ function PaletteRow({
   onSelect: () => void;
   onChange?: (name: string) => void;
   onDelete?: () => void;
+  topPadding?: number;
 }) {
   return (
     <div
-      className={`relative shrink-0 w-full cursor-pointer transition-colors ${isSelected ? 'bg-[#f0f0f0]' : 'hover:bg-[#fafafa]'}`}
+      className={`relative shrink-0 w-full cursor-pointer transition-all active:scale-[0.99] ${isSelected ? 'bg-[#e6e6e6] hover:bg-[#dcdcdc]' : 'hover:bg-[#e6e6e6] active:bg-[#d4d4d4]'}`}
       data-name="PaletteRow"
       onClick={(e) => { e.stopPropagation(); onSelect(); }}
     >
       <div className="flex flex-col justify-center size-full">
-        <div className="content-stretch flex flex-col gap-[8px] items-start justify-center px-[24px] pt-[6px] pb-[12px] relative w-full">
+        <div
+          className="content-stretch flex flex-col gap-[8px] items-start justify-center px-[24px] pb-[12px] relative w-full"
+          style={{ paddingTop: topPadding ? `${topPadding}px` : '6px' }}
+        >
           <PaletteHeader name={name} onChange={onChange} onDelete={onDelete} />
           <Frame3 min={min} max={max} steps={steps} curve={curve} hue={hue} chroma={chroma} lightness={lightness} opacity={opacity} />
         </div>
@@ -1267,11 +1322,12 @@ function PaletteRow({
   );
 }
 
-function Neutral({ min, max, steps, curve, isSelected, onSelect, onChange }: {
+function Neutral({ min, max, steps, curve, palette, isSelected, onSelect, onChange }: {
   min: number;
   max: number;
   steps: number;
   curve: Curve;
+  palette: PaletteData;
   isSelected: boolean;
   onSelect: () => void;
   onChange: (name: string) => void;
@@ -1279,19 +1335,20 @@ function Neutral({ min, max, steps, curve, isSelected, onSelect, onChange }: {
   return (
     <div className="w-full">
       <PaletteRow
-        id="neutral"
-        name="Neutral"
+        id={palette.id}
+        name={palette.name}
         min={min}
         max={max}
         steps={steps}
         curve={curve}
-        hue={0}
-        chroma={0}
-        lightness={50}
-        opacity={100}
+        hue={palette.hue}
+        chroma={palette.chroma}
+        lightness={palette.lightness}
+        opacity={palette.opacity}
         isSelected={isSelected}
         onSelect={onSelect}
         onChange={onChange}
+        topPadding={14}
       />
     </div>
   );
@@ -1303,6 +1360,7 @@ function Palettes({
   steps,
   curve,
   palettes,
+  neutralPalette,
   selectedId,
   onSelect,
   onAdd,
@@ -1314,6 +1372,7 @@ function Palettes({
   steps: number;
   curve: Curve;
   palettes: Array<PaletteData>;
+  neutralPalette: PaletteData;
   selectedId: string;
   onSelect: (id: string) => void;
   onAdd: () => void;
@@ -1322,17 +1381,16 @@ function Palettes({
 }) {
   return (
     <div className="content-stretch flex flex-col items-start px-0 pb-[8px] relative shrink-0 w-full" data-name="Palettes">
-      <div className="w-full pt-[8px]">
-        <Neutral
-          min={min}
-          max={max}
-          steps={steps}
-          curve={curve}
-          isSelected={selectedId === 'neutral'}
-          onSelect={() => onSelect('neutral')}
-          onChange={(name) => onPaletteChange('neutral', { name })}
-        />
-      </div>
+      <Neutral
+        min={min}
+        max={max}
+        steps={steps}
+        curve={curve}
+        palette={neutralPalette}
+        isSelected={selectedId === 'neutral'}
+        onSelect={() => onSelect('neutral')}
+        onChange={(name) => onPaletteChange('neutral', { name })}
+      />
       {palettes.map((palette) => (
         <PaletteRow
           key={palette.id}
@@ -1363,6 +1421,7 @@ function PaletteArea({
   steps,
   curve,
   palettes,
+  neutralPalette,
   selectedId,
   onSelect,
   onAdd,
@@ -1374,6 +1433,7 @@ function PaletteArea({
   steps: number;
   curve: Curve;
   palettes: Array<PaletteData>;
+  neutralPalette: PaletteData;
   selectedId: string;
   onSelect: (id: string) => void;
   onAdd: () => void;
@@ -1388,7 +1448,7 @@ function PaletteArea({
     >
       <div
         onClick={(e) => { e.stopPropagation(); onSelect('system'); }}
-        className={`w-full cursor-pointer sticky top-0 z-50 ${selectedId === 'system' ? 'bg-[#e6e6e6]' : 'bg-[#f5f5f5]'}`}
+        className={`w-full cursor-pointer sticky top-0 z-50 transition-all active:scale-[0.99] ${selectedId === 'system' ? 'bg-[#e6e6e6] hover:bg-[#dcdcdc]' : 'bg-[#f5f5f5] hover:bg-[#e6e6e6] active:bg-[#d4d4d4]'}`}
       >
         <SystemRail min={min} max={max} steps={steps} curve={curve} isSelected={selectedId === 'system'} />
       </div>
@@ -1398,6 +1458,7 @@ function PaletteArea({
         steps={steps}
         curve={curve}
         palettes={palettes}
+        neutralPalette={neutralPalette}
         selectedId={selectedId}
         onSelect={onSelect}
         onAdd={onAdd}
@@ -1414,6 +1475,7 @@ function Main({
   steps,
   curve,
   palettes,
+  neutralPalette,
   selectedId,
   onSelect,
   onAdd,
@@ -1425,6 +1487,7 @@ function Main({
   steps: number;
   curve: Curve;
   palettes: Array<PaletteData>;
+  neutralPalette: PaletteData;
   selectedId: string;
   onSelect: (id: string) => void;
   onAdd: () => void;
@@ -1440,6 +1503,7 @@ function Main({
         steps={steps}
         curve={curve}
         palettes={palettes}
+        neutralPalette={neutralPalette}
         selectedId={selectedId}
         onSelect={onSelect}
         onAdd={onAdd}
@@ -1596,6 +1660,7 @@ function Global() {
         steps={steps}
         curve={curve}
         palettes={palettes}
+        neutralPalette={neutralPalette}
         selectedId={selectedId}
         onSelect={handleSelect}
         onAdd={handleAddPalette}

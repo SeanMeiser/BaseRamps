@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { ArrowUpRight } from "lucide-react";
 import svgPaths from "./svg-6ygof4qbak";
 import svgPathsK from "./svg-kkxrrzwln3";
 import IsobarOverlay from "./IsobarOverlay";
@@ -257,15 +258,34 @@ function EyeDropper() {
   );
 }
 
+// OKLCH hue offset: Red in standard HSL is 0°, but in OKLCH red is approximately 29.2°
+// These functions convert between visual/slider hue (HSL-style where 0° = red) and OKLCH hue
+const OKLCH_HUE_OFFSET = 29.2;
+
+function visualHueToOklchHue(visualHue: number): number {
+  // Convert from visual/slider position (0° = red) to OKLCH hue (~29.2° = red)
+  return (visualHue + OKLCH_HUE_OFFSET) % 360;
+}
+
+function oklchHueToVisualHue(oklchHue: number): number {
+  // Convert from OKLCH hue to visual/slider position
+  return (oklchHue - OKLCH_HUE_OFFSET + 360) % 360;
+}
+
 function HueBar({ hue, onChange }: { hue: number; onChange: (h: number) => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
+
+  // Convert OKLCH hue to visual position for display
+  const visualHue = oklchHueToVisualHue(hue);
 
   const handleMove = useCallback((e: PointerEvent) => {
     if (!isDragging.current || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    onChange(Math.round(x * 360));
+    // Convert visual position (0-360 where 0 = red) to OKLCH hue
+    const visualHueFromPosition = Math.round(x * 360);
+    onChange(visualHueToOklchHue(visualHueFromPosition));
   }, [onChange]);
 
   const handleUp = useCallback(() => {
@@ -299,7 +319,7 @@ function HueBar({ hue, onChange }: { hue: number; onChange: (h: number) => void 
       />
       <div
         className="absolute bg-[#020202] size-[24px] top-1/2 -translate-y-1/2 cursor-ew-resize border border-white shadow-sm -ml-[12px]"
-        style={{ left: `${(hue / 360) * 100}%` }}
+        style={{ left: `${(visualHue / 360) * 100}%` }}
         data-name="Handle"
       />
     </div>
@@ -667,7 +687,7 @@ export default function ControlPanel({ palette, onChange, min, max, steps, curve
   }
 
   return (
-    <div className="content-stretch flex flex-col items-start relative size-full" data-name="ControlPanel">
+    <div className="bg-[#f5f5f5] flex flex-col items-start relative size-full" data-name="ControlPanel">
       <ControlPanelHeader />
       <ControlsNewColorScale palette={palette} onChange={onChange} min={min} max={max} steps={steps} curve={curve} />
     </div>
