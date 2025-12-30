@@ -1141,11 +1141,10 @@ function getWCAGRating(ratio: number) {
   return "Fail";
 }
 
-function Swatch({ color, lValue, isAnchor = false }: { color: string; lValue: number; isAnchor?: boolean }) {
+function Swatch({ color, lValue, isAnchor = false, onStepSelect }: { color: string; lValue: number; isAnchor?: boolean; onStepSelect?: () => void }) {
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleCopy = () => {
     navigator.clipboard.writeText(color);
     setCopied(true);
     toast("Copied HEX", {
@@ -1159,6 +1158,16 @@ function Swatch({ color, lValue, isAnchor = false }: { color: string; lValue: nu
       }
     });
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Cmd/Ctrl+click copies, regular click selects step
+    if (e.metaKey || e.ctrlKey) {
+      handleCopy();
+    } else if (onStepSelect) {
+      onStepSelect();
+    }
   };
 
   const lum = getLuminanceFromHex(color);
@@ -1184,7 +1193,7 @@ function Swatch({ color, lValue, isAnchor = false }: { color: string; lValue: nu
         height: 'calc((100vw - 22vw - 96px) / 7)'
       }}
       data-name="ColorSwatch"
-      onClick={handleCopy}
+      onClick={handleClick}
     >
       {isAnchor && (
         <div
@@ -1201,7 +1210,7 @@ function Swatch({ color, lValue, isAnchor = false }: { color: string; lValue: nu
       )}
       <div className={`opacity-0 group-hover:opacity-100 absolute inset-0 flex flex-col justify-between p-2 transition-opacity ${overlayTextColor}`}>
         <div className="flex justify-end">
-          <div onClick={handleCopy} className="cursor-pointer hover:opacity-70 p-1 rounded hover:bg-black/10">
+          <div onClick={(e) => { e.stopPropagation(); handleCopy(); }} className="cursor-pointer hover:opacity-70 p-1 rounded hover:bg-black/10">
             {copied ? <Check size={14} /> : <Copy size={14} />}
           </div>
         </div>
@@ -1215,7 +1224,7 @@ function Swatch({ color, lValue, isAnchor = false }: { color: string; lValue: nu
   );
 }
 
-function Frame3({ min, max, steps, curve, hue = 0, chroma = 0, lightness = 0.5, opacity = 100 }: { min: number; max: number; steps: number; curve: Curve; hue?: number; chroma?: number; lightness?: number; opacity?: number }) {
+function Frame3({ min, max, steps, curve, hue = 0, chroma = 0, lightness = 0.5, opacity = 100, onStepSelect }: { min: number; max: number; steps: number; curve: Curve; hue?: number; chroma?: number; lightness?: number; opacity?: number; onStepSelect?: (stepIndex: number) => void }) {
   const getLValue = (index: number) => {
     if (steps <= 1) return max;
     const x = index / (steps - 1);
@@ -1225,18 +1234,11 @@ function Frame3({ min, max, steps, curve, hue = 0, chroma = 0, lightness = 0.5, 
   };
 
   const railLightnesses = Array.from({ length: steps }).map((_, i) => getLValue(i));
-  const { colors: rampColors, warning, anchorIndex } = generateOklchRamp(hue, chroma, lightness, railLightnesses);
+  const { colors: rampColors, anchorIndex } = generateOklchRamp(hue, chroma, lightness, railLightnesses);
 
 
   return (
     <div className="w-full">
-      {warning && (
-        <div className="mb-[8px] px-[8px] py-[6px] bg-[#fff3cd] border border-[#ffc107] rounded-[4px]">
-          <p className="font-['JetBrains_Mono:Regular',sans-serif] text-[10px] xl:text-[11px] 2xl:text-[12px] text-[#856404] leading-[normal]">
-            ⚠ Color adjusted to fit system constraints.
-          </p>
-        </div>
-      )}
       <div className="content-stretch flex gap-[8px] items-center relative shrink-0 w-full">
         {rampColors.map((colorHex, i) => {
           const l = railLightnesses[i];
@@ -1247,13 +1249,14 @@ function Frame3({ min, max, steps, curve, hue = 0, chroma = 0, lightness = 0.5, 
           const finalColor = rgbToHex(r2, g2, b2);
 
           return (
-            <Swatch key={i} color={finalColor} lValue={l} isAnchor={i === anchorIndex} />
+            <Swatch key={i} color={finalColor} lValue={l} isAnchor={i === anchorIndex} onStepSelect={onStepSelect ? () => onStepSelect(i) : undefined} />
           );
         })}
       </div>
     </div>
   );
 }
+
 
 function AddRampButton({ onClick }: { onClick: () => void }) {
   return (
@@ -1285,7 +1288,8 @@ function PaletteRow({
   onSelect,
   onChange,
   onDelete,
-  topPadding
+  topPadding,
+  onStepSelect
 }: {
   id: string;
   name: string;
@@ -1302,27 +1306,60 @@ function PaletteRow({
   onChange?: (name: string) => void;
   onDelete?: () => void;
   topPadding?: number;
+  onStepSelect?: (stepIndex: number) => void;
 }) {
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
     <div
-      className={`relative shrink-0 w-full cursor-pointer transition-all active:scale-[0.99] ${isSelected ? 'bg-[#e6e6e6] hover:bg-[#dcdcdc]' : 'hover:bg-[#e6e6e6] active:bg-[#d4d4d4]'}`}
+      className={`relative shrink-0 w-full cursor-pointer transition-all active:scale-[0.99] active:bg-[#d4d4d4]`}
       data-name="PaletteRow"
       onClick={(e) => { e.stopPropagation(); onSelect(); }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Hover indicator - translucent version */}
+      {!isSelected && isHovered && (
+        <div
+          className="absolute transition-opacity"
+          style={{
+            left: '0px',
+            top: '8px',
+            bottom: '8px',
+            width: '4px',
+            backgroundColor: 'rgba(0, 0, 0, 0.2)',
+            borderRadius: '0 9999px 9999px 0',
+            zIndex: 50
+          }}
+        />
+      )}
+      {/* Selected indicator - solid version */}
+      {isSelected && (
+        <div style={{
+          position: 'absolute',
+          left: '0px',
+          top: '8px',
+          bottom: '8px',
+          width: '4px',
+          backgroundColor: '#000',
+          borderRadius: '0 9999px 9999px 0',
+          zIndex: 50
+        }} />
+      )}
       <div className="flex flex-col justify-center size-full">
         <div
           className="content-stretch flex flex-col gap-[8px] items-start justify-center px-[24px] pb-[12px] relative w-full"
           style={{ paddingTop: topPadding ? `${topPadding}px` : '6px' }}
         >
           <PaletteHeader name={name} onChange={onChange} onDelete={onDelete} />
-          <Frame3 min={min} max={max} steps={steps} curve={curve} hue={hue} chroma={chroma} lightness={lightness} opacity={opacity} />
+          <Frame3 min={min} max={max} steps={steps} curve={curve} hue={hue} chroma={chroma} lightness={lightness} opacity={opacity} onStepSelect={onStepSelect} />
         </div>
       </div>
     </div>
   );
 }
 
-function Neutral({ min, max, steps, curve, palette, isSelected, onSelect, onChange }: {
+function Neutral({ min, max, steps, curve, palette, isSelected, onSelect, onChange, onStepSelect }: {
   min: number;
   max: number;
   steps: number;
@@ -1331,6 +1368,7 @@ function Neutral({ min, max, steps, curve, palette, isSelected, onSelect, onChan
   isSelected: boolean;
   onSelect: () => void;
   onChange: (name: string) => void;
+  onStepSelect?: (stepIndex: number) => void;
 }) {
   return (
     <div className="w-full">
@@ -1349,6 +1387,7 @@ function Neutral({ min, max, steps, curve, palette, isSelected, onSelect, onChan
         onSelect={onSelect}
         onChange={onChange}
         topPadding={14}
+        onStepSelect={onStepSelect}
       />
     </div>
   );
@@ -1365,7 +1404,8 @@ function Palettes({
   onSelect,
   onAdd,
   onDelete,
-  onPaletteChange
+  onPaletteChange,
+  onStepSelect
 }: {
   min: number;
   max: number;
@@ -1378,6 +1418,7 @@ function Palettes({
   onAdd: () => void;
   onDelete: (id: string) => void;
   onPaletteChange: (id: string, updates: Partial<PaletteData>) => void;
+  onStepSelect?: (id: string, stepIndex: number) => void;
 }) {
   return (
     <div className="content-stretch flex flex-col items-start px-0 pb-[8px] relative shrink-0 w-full" data-name="Palettes">
@@ -1390,6 +1431,7 @@ function Palettes({
         isSelected={selectedId === 'neutral'}
         onSelect={() => onSelect('neutral')}
         onChange={(name) => onPaletteChange('neutral', { name })}
+        onStepSelect={onStepSelect ? (stepIndex) => onStepSelect('neutral', stepIndex) : undefined}
       />
       {palettes.map((palette) => (
         <PaletteRow
@@ -1408,12 +1450,15 @@ function Palettes({
           onSelect={() => onSelect(palette.id)}
           onChange={(name) => onPaletteChange(palette.id, { name })}
           onDelete={() => onDelete(palette.id)}
+          onStepSelect={onStepSelect ? (stepIndex) => onStepSelect(palette.id, stepIndex) : undefined}
         />
       ))}
+      <div className="h-[24px]" />
       <AddRampButton onClick={onAdd} />
     </div>
   );
 }
+
 
 function PaletteArea({
   min,
@@ -1426,7 +1471,8 @@ function PaletteArea({
   onSelect,
   onAdd,
   onDelete,
-  onPaletteChange
+  onPaletteChange,
+  onStepSelect
 }: {
   min: number;
   max: number;
@@ -1439,7 +1485,10 @@ function PaletteArea({
   onAdd: () => void;
   onDelete: (id: string) => void;
   onPaletteChange: (id: string, updates: Partial<PaletteData>) => void;
+  onStepSelect?: (id: string, stepIndex: number) => void;
 }) {
+  const [isRailHovered, setIsRailHovered] = useState(false);
+
   return (
     <div
       className="content-stretch flex flex-col flex-1 items-start relative w-full overflow-auto"
@@ -1448,8 +1497,38 @@ function PaletteArea({
     >
       <div
         onClick={(e) => { e.stopPropagation(); onSelect('system'); }}
-        className={`w-full cursor-pointer sticky top-0 z-50 transition-all active:scale-[0.99] ${selectedId === 'system' ? 'bg-[#e6e6e6] hover:bg-[#dcdcdc]' : 'bg-[#f5f5f5] hover:bg-[#e6e6e6] active:bg-[#d4d4d4]'}`}
+        onMouseEnter={() => setIsRailHovered(true)}
+        onMouseLeave={() => setIsRailHovered(false)}
+        className={`w-full cursor-pointer sticky top-0 z-50 transition-all active:scale-[0.99] bg-[#f5f5f5] active:bg-[#d4d4d4]`}
       >
+        {/* Hover indicator - translucent version */}
+        {selectedId !== 'system' && isRailHovered && (
+          <div
+            className="absolute transition-opacity"
+            style={{
+              left: '0px',
+              top: '8px',
+              bottom: '8px',
+              width: '4px',
+              backgroundColor: 'rgba(0, 0, 0, 0.2)',
+              borderRadius: '0 9999px 9999px 0',
+              zIndex: 50
+            }}
+          />
+        )}
+        {/* Selected indicator - solid version */}
+        {selectedId === 'system' && (
+          <div style={{
+            position: 'absolute',
+            left: '0px',
+            top: '8px',
+            bottom: '8px',
+            width: '4px',
+            backgroundColor: '#000',
+            borderRadius: '0 9999px 9999px 0',
+            zIndex: 50
+          }} />
+        )}
         <SystemRail min={min} max={max} steps={steps} curve={curve} isSelected={selectedId === 'system'} />
       </div>
       <Palettes
@@ -1464,6 +1543,7 @@ function PaletteArea({
         onAdd={onAdd}
         onDelete={onDelete}
         onPaletteChange={onPaletteChange}
+        onStepSelect={onStepSelect}
       />
     </div>
   );
@@ -1480,7 +1560,8 @@ function Main({
   onSelect,
   onAdd,
   onDelete,
-  onPaletteChange
+  onPaletteChange,
+  onStepSelect
 }: {
   min: number;
   max: number;
@@ -1493,6 +1574,7 @@ function Main({
   onAdd: () => void;
   onDelete: (id: string) => void;
   onPaletteChange: (id: string, updates: Partial<PaletteData>) => void;
+  onStepSelect?: (id: string, stepIndex: number) => void;
 }) {
   return (
     <div className="content-stretch flex flex-col flex-1 items-start relative h-screen overflow-hidden" data-name="Main">
@@ -1509,6 +1591,7 @@ function Main({
         onAdd={onAdd}
         onDelete={onDelete}
         onPaletteChange={onPaletteChange}
+        onStepSelect={onStepSelect}
       />
     </div>
   );
@@ -1620,7 +1703,7 @@ function Global() {
   };
 
   const handleDeletePalette = (id: string) => {
-    setPalettes(palettes.filter(p => p.id !== id));
+    setPalettes(palettes.filter((p: PaletteData) => p.id !== id));
     if (selectedId === id) {
       setSelectedId('system');
     }
@@ -1628,9 +1711,9 @@ function Global() {
 
   const handlePaletteChange = (id: string, updates: Partial<PaletteData>) => {
     if (id === 'neutral') {
-      setNeutralPalette(prev => ({ ...prev, ...updates }));
+      setNeutralPalette((prev: PaletteData) => ({ ...prev, ...updates }));
     } else {
-      setPalettes(palettes.map(p => p.id === id ? { ...p, ...updates } : p));
+      setPalettes(palettes.map((p: PaletteData) => p.id === id ? { ...p, ...updates } : p));
     }
   };
 
@@ -1638,7 +1721,29 @@ function Global() {
     setSelectedId(id);
   };
 
-  const selectedPalette = selectedId === 'neutral' ? neutralPalette : palettes.find(p => p.id === selectedId);
+  // Handle step selection - update lightness to match clicked step
+  const handleStepSelect = (id: string, stepIndex: number) => {
+    // First, select the ramp
+    setSelectedId(id);
+
+    // Calculate the lightness at this step index using the curve
+    const getLValue = (index: number) => {
+      if (steps <= 1) return range.max;
+      const x = index / (steps - 1);
+      const curveY = getCurveY(x, curve);
+      const val = range.max - (curveY * (range.max - range.min));
+      return Math.round(Math.max(0, Math.min(100, val)));
+    };
+
+    const stepLightness = getLValue(stepIndex);
+    // Convert from HSL percentage (0-100) to OKLCH (0-1)
+    const oklchLightness = stepLightness / 100;
+
+    // Update the palette's lightness
+    handlePaletteChange(id, { lightness: oklchLightness });
+  };
+
+  const selectedPalette = selectedId === 'neutral' ? neutralPalette : palettes.find((p: PaletteData) => p.id === selectedId);
 
   return (
     <div className="flex items-start w-full h-screen" data-name="Global">
@@ -1666,6 +1771,7 @@ function Global() {
         onAdd={handleAddPalette}
         onDelete={handleDeletePalette}
         onPaletteChange={handlePaletteChange}
+        onStepSelect={handleStepSelect}
       />
       <FaviconUpdater
         min={range.min}
@@ -1677,6 +1783,7 @@ function Global() {
     </div>
   );
 }
+
 
 export default function Desktop() {
   return (
