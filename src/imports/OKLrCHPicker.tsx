@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback, useState, useMemo, type PointerEvent } from 'react';
 import { converter } from 'culori';
-import { getGamutBoundary } from '../lib/gamut/oklchGamut';
+import { getGamutBoundary, isDisplayable } from '../lib/gamut/oklchGamut';
 
 const toRgb = converter('rgb');
 
@@ -193,7 +193,24 @@ export default function OKLrCHPicker({ hue, lightness, chroma, railLightnesses, 
         ctx.setLineDash([]);
 
         // 4. Draw Handle
-        const handlePos = toCanvasCoords(lightness, chroma);
+        // If the stored chroma is out of gamut at this lightness, display the handle
+        // at the gamut boundary (max displayable chroma) rather than outside the visible area
+        let displayChroma = chroma;
+        if (!isDisplayable(lightness, chroma, hue)) {
+            // Find the max chroma at this lightness from boundary data
+            let boundaryChromaAtL = 0;
+            let closestLDist = Infinity;
+            for (const point of boundary) {
+                const lDist = Math.abs(point.l - lightness);
+                if (lDist < closestLDist) {
+                    closestLDist = lDist;
+                    boundaryChromaAtL = point.c;
+                }
+            }
+            displayChroma = Math.min(chroma, boundaryChromaAtL);
+        }
+
+        const handlePos = toCanvasCoords(lightness, displayChroma);
 
         // Outer ring
         ctx.beginPath();
@@ -204,8 +221,8 @@ export default function OKLrCHPicker({ hue, lightness, chroma, railLightnesses, 
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Inner circle with current color
-        const currentRgb = toRgb({ mode: 'oklch', l: lightness, c: chroma, h: hue });
+        // Inner circle with current color (use clamped displayChroma for accurate color)
+        const currentRgb = toRgb({ mode: 'oklch', l: lightness, c: displayChroma, h: hue });
         if (currentRgb && currentRgb.r !== undefined) {
             const r = Math.round(Math.max(0, Math.min(255, currentRgb.r * 255)));
             const g = Math.round(Math.max(0, Math.min(255, currentRgb.g * 255)));
@@ -231,7 +248,8 @@ export default function OKLrCHPicker({ hue, lightness, chroma, railLightnesses, 
         const { c, l } = fromCanvasCoords(x, y);
 
         // Clamp chroma to valid range
-        const clampedC = Math.max(0, Math.min(FIXED_MAX_CHROMA, c));
+        let clampedC = Math.max(0, Math.min(FIXED_MAX_CHROMA, c));
+        let clampedL = Math.max(0, Math.min(1, l));
 
         // Snap lightness to nearest rail value
         // Convert railLightnesses (HSL 0-100) to OKLCH (0-1) for comparison
@@ -239,18 +257,55 @@ export default function OKLrCHPicker({ hue, lightness, chroma, railLightnesses, 
 
         // Find nearest rail lightness
         let nearestL = railsInOklch[0];
-        let minDiff = Math.abs(l - nearestL);
+        let minDiff = Math.abs(clampedL - nearestL);
 
         for (const railL of railsInOklch) {
-            const diff = Math.abs(l - railL);
+            const diff = Math.abs(clampedL - railL);
             if (diff < minDiff) {
                 minDiff = diff;
                 nearestL = railL;
             }
         }
 
+        // Check if the point (with snapped lightness) is within the sRGB gamut
+        // If not, find the nearest in-gamut point on the boundary
+        if (!isDisplayable(nearestL, clampedC, hue)) {
+            // Find the nearest boundary point for this lightness
+            // Binary search could be used, but since we already have the boundary,
+            // we can find the max chroma for a lightness close to nearestL
+            let nearestBoundaryC = 0;
+            let minBoundaryDist = Infinity;
+
+            for (const point of boundary) {
+                // Calculate distance in normalized L-C space
+                const distL = Math.abs(point.l - nearestL);
+                const distC = Math.abs(point.c - clampedC);
+                const dist = Math.sqrt(distL * distL + distC * distC);
+
+                if (dist < minBoundaryDist) {
+                    minBoundaryDist = dist;
+                    nearestBoundaryC = point.c;
+                }
+            }
+
+            // Clamp chroma to the boundary (the max displayable chroma for this lightness)
+            // Find the boundary point closest to our target lightness for most accurate clamping
+            let boundaryChromaAtL = 0;
+            let closestLDist = Infinity;
+            for (const point of boundary) {
+                const lDist = Math.abs(point.l - nearestL);
+                if (lDist < closestLDist) {
+                    closestLDist = lDist;
+                    boundaryChromaAtL = point.c;
+                }
+            }
+
+            // Use the chroma from the boundary at this lightness level
+            clampedC = Math.min(clampedC, boundaryChromaAtL);
+        }
+
         onChange(clampedC, nearestL);
-    }, [fromCanvasCoords, railLightnesses, onChange]);
+    }, [fromCanvasCoords, railLightnesses, onChange, hue, boundary]);
 
     const handleUp = useCallback(() => {
         isDragging.current = false;

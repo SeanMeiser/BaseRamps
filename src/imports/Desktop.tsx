@@ -4,6 +4,7 @@ import imgExampleGrid from "figma:asset/c4d507563c5edd8adffbf8c880bffd300fe93c4a
 import { Copy, Check, Github, ArrowUpRight } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Toaster, toast } from "sonner@2.0.3";
+import { findMaxChroma } from '../lib/gamut/oklchGamut';
 type Curve = {
   x1: number;
   y1: number;
@@ -1739,7 +1740,9 @@ function Global() {
     // Convert from HSL percentage (0-100) to OKLCH (0-1)
     const oklchLightness = stepLightness / 100;
 
-    // Update the palette's lightness
+    // Only update lightness - preserve the stored chroma so the entire ramp
+    // maintains its saturation. The color picker will display the handle
+    // at the gamut boundary if the stored chroma exceeds what's displayable.
     handlePaletteChange(id, { lightness: oklchLightness });
   };
 
