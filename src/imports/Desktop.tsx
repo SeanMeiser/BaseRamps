@@ -1,9 +1,8 @@
 import svgPaths from "./svg-jpfemsx01m";
 import clsx from "clsx";
-import imgExampleGrid from "figma:asset/c4d507563c5edd8adffbf8c880bffd300fe93c4a.png";
 import { Copy, Check, Github, ArrowUpRight } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Toaster, toast } from "sonner@2.0.3";
+import { Toaster, toast } from "sonner";
 import { findMaxChroma } from '../lib/gamut/oklchGamut';
 type Curve = {
   x1: number;
@@ -139,16 +138,11 @@ function Text({ text, onClick, isEditing, onChange, onBlur, onKeyDown }: TextPro
 
 function ControlPanelHeader() {
   return (
-    <div className="bg-[#f5f5f5] relative shrink-0 w-full" data-name="ControlPanelHeader">
+    <div className="bg-[#f5f5f5] relative shrink-0 w-full">
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_1px_1px_0px] border-solid inset-0 pointer-events-none" />
       <div className="flex flex-row items-center w-full">
         <div className="content-stretch flex items-center px-[16px] pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] relative w-full">
-          <p className="absolute left-[16px] top-1/2 -translate-y-1/2 font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] shrink-0 text-[#7a7a7a] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">SYSTEM CONTROLS</p>
-          {/* Phantom element: mimic "Export" content (Text + Icon) which is the tallest element in Navigation */}
-          <div className="invisible flex items-center gap-[8px] opacity-0 pointer-events-none">
-            <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">Export</p>
-            <div className="relative shrink-0 size-[16px] xl:size-[18px] 2xl:size-[20px]" />
-          </div>
+          <p className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] shrink-0 text-[#7a7a7a] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">SYSTEM CONTROLS</p>
         </div>
       </div>
     </div>
@@ -224,7 +218,7 @@ type LabelsProps = {
 
 function Labels({ min, max, onMinChange, onMaxChange }: LabelsProps) {
   return (
-    <div className="content-stretch flex font-['JetBrains_Mono:Regular',sans-serif] font-normal items-end justify-between leading-[normal] relative shrink-0 text-[#7a7a7a] text-[10px] xl:text-[11px] 2xl:text-[12px] text-nowrap w-full" data-name="Labels">
+    <div className="content-stretch flex font-['JetBrains_Mono:Regular',sans-serif] font-normal items-end justify-between leading-[normal] relative shrink-0 text-[#7a7a7a] text-[10px] xl:text-[11px] 2xl:text-[12px] text-nowrap w-full">
       <EditableLabel value={max} onCommit={onMaxChange} suffix="%" />
       <EditableLabel value={min} onCommit={onMinChange} suffix="%" />
     </div>
@@ -243,17 +237,17 @@ function PortionActive({ left, width, onMinDragStart, onMaxDragStart }: PortionA
     <div
       className="absolute content-stretch flex items-center top-0"
       style={{ left, width }}
-      data-name="PortionActive"
+     
     >
       <div
         className="bg-[#020202] shrink-0 size-[16px] cursor-ew-resize hover:scale-125 transition-transform"
-        data-name="HandleMin"
+       
         onPointerDown={onMaxDragStart}
       />
-      <div className="basis-0 bg-[#020202] grow h-[6px] min-h-px min-w-px shrink-0" data-name="Active" />
+      <div className="basis-0 bg-[#020202] grow h-[6px] min-h-px min-w-px shrink-0" />
       <div
         className="bg-[#020202] shrink-0 size-[16px] cursor-ew-resize hover:scale-125 transition-transform"
-        data-name="HandleMax"
+       
         onPointerDown={onMinDragStart}
       />
     </div>
@@ -278,8 +272,8 @@ function LightnessLimitControlBar({ min, max, onMinDragStart, onMaxDragStart, ba
   const widthVal = `${max - min}%`;
 
   return (
-    <div ref={barRef} className="h-[16px] relative shrink-0 w-full" data-name="LightnessLimitControlBar">
-      <div className="absolute bg-[#e6e6e6] h-[6px] left-0 top-[5px] w-full" data-name="PortionDisabled" />
+    <div ref={barRef} className="h-[16px] relative shrink-0 w-full">
+      <div className="absolute bg-[#e6e6e6] h-[6px] left-0 top-[5px] w-full" />
       <PortionActive
         left={leftPos}
         width={widthVal}
@@ -351,7 +345,7 @@ function LightnessRangeControls({ min, max, onChange }: { min: number; max: numb
   };
 
   return (
-    <div className="content-stretch flex flex-col gap-[4px] items-start relative shrink-0 w-full" data-name="LightnessRangeControls">
+    <div className="content-stretch flex flex-col gap-[4px] items-start relative shrink-0 w-full">
       <Labels
         min={min}
         max={max}
@@ -371,7 +365,7 @@ function LightnessRangeControls({ min, max, onChange }: { min: number; max: numb
 
 function LightnessRange({ min, max, onChange }: { min: number; max: number; onChange: (min: number, max: number) => void }) {
   return (
-    <div className="content-stretch flex flex-col gap-[16px] items-start relative shrink-0 w-full" data-name="LightnessRange">
+    <div className="content-stretch flex flex-col gap-[16px] items-start relative shrink-0 w-full">
       <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">Lightness Range</p>
       <LightnessRangeControls min={min} max={max} onChange={onChange} />
     </div>
@@ -386,7 +380,7 @@ function Minus({ onClick }: MinusProps) {
   return (
     <div
       className="relative shrink-0 size-[32px] xl:size-[40px] 2xl:size-[50px] cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all"
-      data-name="minus"
+     
       onClick={onClick}
     >
       <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 46 46">
@@ -400,7 +394,7 @@ function Minus({ onClick }: MinusProps) {
 
 function Plus() {
   return (
-    <div className="relative shrink-0 size-[20px] xl:size-[25px] 2xl:size-[28.308px]" data-name="plus">
+    <div className="relative shrink-0 size-[20px] xl:size-[25px] 2xl:size-[28.308px]">
       <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 28.3077 28.3077">
         <g id="plus">
           <path d={svgPaths.p2fc198c0} fill="var(--fill-0, black)" id="Vector" />
@@ -418,7 +412,7 @@ function Plus1({ onClick }: Plus1Props) {
   return (
     <div
       className="content-stretch flex flex-col items-center justify-center overflow-clip px-[3.538px] py-[14.154px] relative shrink-0 size-[32px] xl:size-[40px] 2xl:size-[50px] cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all"
-      data-name="plus"
+     
       onClick={onClick}
     >
       <Plus />
@@ -433,10 +427,10 @@ type StepperProps = {
 
 function Stepper({ onDecrement, onIncrement }: StepperProps) {
   return (
-    <div className="content-stretch flex h-full items-center relative shrink-0" data-name="Stepper">
-      <div className="bg-[#c4c4c4] h-full shrink-0 w-px" data-name="Div" />
+    <div className="content-stretch flex h-full items-center relative shrink-0">
+      <div className="bg-[#c4c4c4] h-full shrink-0 w-px" />
       <Minus onClick={onDecrement} />
-      <div className="bg-[#c4c4c4] h-full shrink-0 w-px" data-name="Div" />
+      <div className="bg-[#c4c4c4] h-full shrink-0 w-px" />
       <Plus1 onClick={onIncrement} />
     </div>
   );
@@ -489,7 +483,7 @@ function Stepper1({ steps, onChange }: { steps: number; onChange: (val: number) 
   };
 
   return (
-    <div className="content-stretch flex items-center justify-between relative shrink-0 w-full" data-name="Stepper">
+    <div className="content-stretch flex items-center justify-between relative shrink-0 w-full">
       <Text
         text={isEditing ? inputValue : String(steps)}
         onClick={handleTextClick}
@@ -508,7 +502,7 @@ function Stepper1({ steps, onChange }: { steps: number; onChange: (val: number) 
 
 function Steps({ steps, onChange }: { steps: number; onChange: (val: number) => void }) {
   return (
-    <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full" data-name="Steps">
+    <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full">
       <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">Steps</p>
       <Stepper1 steps={steps} onChange={onChange} />
     </div>
@@ -517,7 +511,7 @@ function Steps({ steps, onChange }: { steps: number; onChange: (val: number) => 
 
 function CaretDownLight() {
   return (
-    <div className="relative shrink-0 size-[28.31px]" data-name="caret-down-light">
+    <div className="relative shrink-0 size-[28.31px]">
       <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 28.31 28.31">
         <g id="caret-down-light">
           <path d={svgPaths.p1efa0f00} fill="var(--fill-0, #18180F)" id="Vector" />
@@ -529,7 +523,7 @@ function CaretDownLight() {
 
 function Plus2() {
   return (
-    <div className="content-stretch flex flex-col items-center justify-center overflow-clip px-[3.538px] py-[14.154px] relative shrink-0 size-[32px] xl:size-[40px] 2xl:size-[50px]" data-name="plus">
+    <div className="content-stretch flex flex-col items-center justify-center overflow-clip px-[3.538px] py-[14.154px] relative shrink-0 size-[32px] xl:size-[40px] 2xl:size-[50px]">
       <CaretDownLight />
     </div>
   );
@@ -537,8 +531,8 @@ function Plus2() {
 
 function Stepper2() {
   return (
-    <div className="content-stretch flex h-full items-center relative shrink-0" data-name="Stepper">
-      <div className="bg-[#c4c4c4] h-full shrink-0 w-px" data-name="Div" />
+    <div className="content-stretch flex h-full items-center relative shrink-0">
+      <div className="bg-[#c4c4c4] h-full shrink-0 w-px" />
       <Plus2 />
     </div>
   );
@@ -546,7 +540,7 @@ function Stepper2() {
 
 function DropDown({ label }: { label: string }) {
   return (
-    <div className="content-stretch flex items-center justify-between relative shrink-0 w-full" data-name="DropDown">
+    <div className="content-stretch flex items-center justify-between relative shrink-0 w-full">
       <Text text={label} />
       <div className="flex flex-row items-center self-stretch">
         <Stepper2 />
@@ -597,7 +591,7 @@ function LightnessCurvePresets({ curve, onChange }: { curve: Curve; onChange: (c
   };
 
   return (
-    <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full" data-name="LightnessCurvePresets">
+    <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full">
       <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">Lightness Curve</p>
 
       {/* Position Wrapper */}
@@ -707,12 +701,12 @@ function LightnessCurveGraph({ curve, onChange, steps }: { curve: Curve; onChang
   const pathD = `M ${p0.x} ${p0.y} C ${cp1.x} ${cp1.y}, ${cp2.x} ${cp2.y}, ${p3.x} ${p3.y}`;
 
   return (
-    <div className="bg-white relative shrink-0 w-full aspect-square" data-name="LightnessCurveGraph">
+    <div className="bg-white relative shrink-0 w-full aspect-square">
       <div
         ref={containerRef}
         className="overflow-clip relative rounded-[inherit] size-full"
       >
-        <div className="absolute left-0 size-full top-0 pointer-events-none" data-name="Grid">
+        <div className="absolute left-0 size-full top-0 pointer-events-none">
           <svg className="block size-full" width="100%" height="100%" preserveAspectRatio="none">
             {/* Vertical Lines */}
             {Array.from({ length: steps }).map((_, i) => {
@@ -748,7 +742,7 @@ function LightnessCurveGraph({ curve, onChange, steps }: { curve: Curve; onChang
             })}
           </svg>
         </div>
-        <div className="absolute left-0 size-full top-0" data-name="Bezier">
+        <div className="absolute left-0 size-full top-0">
           <div className="absolute inset-0">
             <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 100 100">
               <path d={pathD} id="Bezier" stroke="var(--stroke-0, black)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
@@ -781,7 +775,7 @@ function LightnessCurveGraph({ curve, onChange, steps }: { curve: Curve; onChang
 
 function LightnessCurve({ curve, onChange, steps }: { curve: Curve; onChange: (c: Curve) => void; steps: number }) {
   return (
-    <div className="content-stretch flex flex-col gap-[32px] items-start relative shrink-0 w-full" data-name="LightnessCurve">
+    <div className="content-stretch flex flex-col gap-[32px] items-start relative shrink-0 w-full">
       <LightnessCurvePresets curve={curve} onChange={onChange} />
       <LightnessCurveGraph curve={curve} onChange={onChange} steps={steps} />
     </div>
@@ -798,7 +792,7 @@ function ControlsSystem({ min, max, steps, curve, onRangeChange, onStepsChange, 
   onCurveChange: (c: Curve) => void;
 }) {
   return (
-    <div className="bg-[#f5f5f5] flex-1 relative w-full overflow-auto" data-name="Controls--System">
+    <div className="bg-[#f5f5f5] flex-1 relative w-full overflow-auto">
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_1px_0px_0px] border-solid inset-0 pointer-events-none" />
       <div className="size-full">
         <div className="content-stretch flex flex-col gap-[32px] items-start pb-[24px] pt-[16px] px-[24px] relative w-full">
@@ -824,7 +818,7 @@ export type PaletteData = {
 
 function CreatorSignature() {
   return (
-    <div className="mt-auto relative w-full" data-name="CreatorSignature">
+    <div className="mt-auto relative w-full">
       {/* Right border overlay to match other control blocks */}
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_1px_0px_0px] border-solid inset-0 pointer-events-none z-10" />
       <div className="px-[24px] py-[24px] border-t border-[#c4c4c4] relative">
@@ -865,7 +859,7 @@ function ControlPanel({ min, max, steps, curve, onRangeChange, onStepsChange, on
   const isRampSelected = selectedId !== 'system' && selectedPalette && onPaletteChange;
 
   return (
-    <div className="bg-[#f5f5f5] content-stretch flex flex-col items-start relative shrink-0 w-[22vw] h-screen" data-name="ControlPanel">
+    <div className="bg-[#f5f5f5] content-stretch flex flex-col items-start relative shrink-0 w-[22vw] h-screen">
       <div className="flex-1 w-full overflow-hidden flex flex-col">
         {isRampSelected ? (
           <RampControlPanel
@@ -905,7 +899,7 @@ function GithubButton() {
       target="_blank"
       rel="noopener noreferrer"
       className="content-stretch flex items-center justify-center pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] px-[16px] relative shrink-0 cursor-pointer transition-all hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98]"
-      data-name="GithubButton"
+     
     >
       <Github className="relative shrink-0 text-[#7a7a7a] hover:text-[#18180f] transition-colors" size={16} />
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_0px_1px] border-solid inset-0 pointer-events-none" />
@@ -915,7 +909,7 @@ function GithubButton() {
 
 function ExportLight() {
   return (
-    <div className="relative shrink-0 size-[16px] xl:size-[18px] 2xl:size-[20px]" data-name="export-light">
+    <div className="relative shrink-0 size-[16px] xl:size-[18px] 2xl:size-[20px]">
       <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 24 24">
         <g id="export-light">
           <path d={svgPaths.p2f505f00} fill="var(--fill-0, white)" id="Vector" />
@@ -927,7 +921,7 @@ function ExportLight() {
 
 function Export() {
   return (
-    <div className="bg-[#020202] content-stretch flex gap-[8px] items-center justify-center pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] px-[16px] relative shrink-0" data-name="Export">
+    <div className="bg-[#020202] content-stretch flex gap-[8px] items-center justify-center pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] px-[16px] relative shrink-0">
       <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap text-white">Export</p>
       <ExportLight />
     </div>
@@ -936,7 +930,7 @@ function Export() {
 
 function ButtonGroup() {
   return (
-    <div className="content-stretch flex items-center justify-end relative shrink-0" data-name="ButtonGroup">
+    <div className="content-stretch flex items-center justify-end relative shrink-0">
       <GithubButton />
       <Export />
     </div>
@@ -945,7 +939,7 @@ function ButtonGroup() {
 
 function Navigation() {
   return (
-    <div className="bg-[#f5f5f5] relative shrink-0 w-full" data-name="Navigation">
+    <div className="bg-[#f5f5f5] relative shrink-0 w-full">
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_1px] border-solid inset-0 pointer-events-none" />
       <div className="flex flex-row items-center w-full">
         <div className="content-stretch flex items-center justify-between pl-[24px] pr-0 py-0 relative w-full">
@@ -1006,7 +1000,7 @@ function Frame4({ min, max, steps, curve }: { min: number; max: number; steps: n
 
 function SystemRail({ min, max, steps, curve, isSelected }: { min: number; max: number; steps: number; curve: Curve; isSelected: boolean }) {
   return (
-    <div className={`sticky top-0 z-50 relative shrink-0 w-full bg-transparent`} data-name="SystemRail">
+    <div className={`sticky top-0 z-50 relative shrink-0 w-full bg-transparent`}>
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_1px] border-solid inset-0 pointer-events-none" />
       <div className="flex flex-col justify-center size-full">
         <div className="content-stretch flex flex-col items-start justify-center px-[24px] py-[8px] relative w-full">
@@ -1019,7 +1013,7 @@ function SystemRail({ min, max, steps, curve, isSelected }: { min: number; max: 
 
 function TrashLight() {
   return (
-    <div className="relative shrink-0 size-[16px] xl:size-[18px] 2xl:size-[20px]" data-name="trash-light">
+    <div className="relative shrink-0 size-[16px] xl:size-[18px] 2xl:size-[20px]">
       <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 32 32">
         <g id="trash-light">
           <path d={svgPaths.p2bf07e80} fill="var(--fill-0, #7A7A7A)" id="Vector" />
@@ -1193,7 +1187,7 @@ function Swatch({ color, lValue, isAnchor = false, onStepSelect }: { color: stri
         backgroundColor: color,
         height: 'calc((100vw - 22vw - 96px) / 7)'
       }}
-      data-name="ColorSwatch"
+     
       onClick={handleClick}
     >
       {isAnchor && (
@@ -1264,7 +1258,7 @@ function AddRampButton({ onClick }: { onClick: () => void }) {
     <div
       onClick={(e) => { e.stopPropagation(); onClick(); }}
       className="content-stretch flex items-center justify-center py-[24px] relative shrink-0 w-full cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all group"
-      data-name="AddRamp"
+     
     >
       <div className="flex items-center gap-[8px] opacity-50 group-hover:opacity-100 transition-opacity">
         <Plus />
@@ -1314,7 +1308,7 @@ function PaletteRow({
   return (
     <div
       className={`relative shrink-0 w-full cursor-pointer transition-all active:scale-[0.99] active:bg-[#d4d4d4]`}
-      data-name="PaletteRow"
+     
       onClick={(e) => { e.stopPropagation(); onSelect(); }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -1422,7 +1416,7 @@ function Palettes({
   onStepSelect?: (id: string, stepIndex: number) => void;
 }) {
   return (
-    <div className="content-stretch flex flex-col items-start px-0 pb-[8px] relative shrink-0 w-full" data-name="Palettes">
+    <div className="content-stretch flex flex-col items-start px-0 pb-[8px] relative shrink-0 w-full">
       <Neutral
         min={min}
         max={max}
@@ -1493,7 +1487,7 @@ function PaletteArea({
   return (
     <div
       className="content-stretch flex flex-col flex-1 items-start relative w-full overflow-auto"
-      data-name="PaletteArea"
+     
       onClick={() => onSelect('system')}
     >
       <div
@@ -1578,7 +1572,7 @@ function Main({
   onStepSelect?: (id: string, stepIndex: number) => void;
 }) {
   return (
-    <div className="content-stretch flex flex-col flex-1 items-start relative h-screen overflow-hidden" data-name="Main">
+    <div className="content-stretch flex flex-col flex-1 items-start relative h-screen overflow-hidden">
       <Navigation />
       <PaletteArea
         min={min}
@@ -1749,7 +1743,7 @@ function Global() {
   const selectedPalette = selectedId === 'neutral' ? neutralPalette : palettes.find((p: PaletteData) => p.id === selectedId);
 
   return (
-    <div className="flex items-start w-full h-screen" data-name="Global">
+    <div className="flex items-start w-full h-screen">
       <ControlPanel
         min={range.min}
         max={range.max}
@@ -1790,7 +1784,7 @@ function Global() {
 
 export default function Desktop() {
   return (
-    <div className="bg-white relative size-full overflow-hidden" data-name="Desktop">
+    <div className="bg-white relative size-full overflow-hidden">
       <Global />
       <Toaster position="bottom-center" />
     </div>

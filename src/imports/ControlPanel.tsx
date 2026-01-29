@@ -94,16 +94,11 @@ function hexToHsl(hex: string): { h: number, s: number, l: number } | null {
 
 function ControlPanelHeader() {
   return (
-    <div className="bg-[#f5f5f5] relative shrink-0 w-full" data-name="ControlPanelHeader">
+    <div className="bg-[#f5f5f5] relative shrink-0 w-full">
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_1px_1px_0px] border-solid inset-0 pointer-events-none" />
       <div className="flex flex-row items-center w-full">
         <div className="content-stretch flex items-center px-[16px] pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] relative w-full">
-          <p className="absolute left-[16px] top-1/2 -translate-y-1/2 font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] shrink-0 text-[#7a7a7a] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">RAMP CONTROLS</p>
-          {/* Phantom element: mimic "Export" content (Text + Icon) which is the tallest element in Navigation */}
-          <div className="invisible flex items-center gap-[8px] opacity-0 pointer-events-none">
-            <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">Export</p>
-            <div className="relative shrink-0 size-[16px] xl:size-[18px] 2xl:size-[20px]" />
-          </div>
+          <p className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] shrink-0 text-[#7a7a7a] text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap">RAMP CONTROLS</p>
         </div>
       </div>
     </div>
@@ -133,7 +128,7 @@ function ColorScaleName({ name, onChange }: { name: string; onChange: (name: str
   };
 
   return (
-    <div className="content-stretch flex items-center justify-center relative shrink-0 w-full" data-name="RampName">
+    <div className="content-stretch flex items-center justify-center relative shrink-0 w-full">
       {isEditing ? (
         <input
           autoFocus
@@ -223,7 +218,7 @@ function ColorPicker({ hue, chroma, lightness, onChange, min, max, steps, curve 
   };
 
   return (
-    <div className="bg-white relative shrink-0 w-full aspect-square select-none touch-none" data-name="ColorPicker">
+    <div className="bg-white relative shrink-0 w-full aspect-square select-none touch-none">
       <OKLrCHPicker
         hue={currentOklchHue}
         lightness={targetLightness}
@@ -237,7 +232,7 @@ function ColorPicker({ hue, chroma, lightness, onChange, min, max, steps, curve 
 
 function EyedropperLight() {
   return (
-    <div className="relative shrink-0 size-[18px] xl:size-[22px] 2xl:size-[28px]" data-name="eyedropper-light">
+    <div className="relative shrink-0 size-[18px] xl:size-[22px] 2xl:size-[28px]">
       <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 27.8677 28.31">
         <g id="eyedropper-light">
           <path d={svgPaths.p3a335fb0} fill="var(--fill-0, #7A7A7A)" id="Vector" />
@@ -249,7 +244,7 @@ function EyedropperLight() {
 
 function EyeDropper() {
   return (
-    <div className="relative shrink-0 size-[32px] xl:size-[40px] 2xl:size-[50px]" data-name="EyeDropper">
+    <div className="relative shrink-0 size-[32px] xl:size-[40px] 2xl:size-[50px]">
       <div className="content-stretch flex flex-col items-center justify-center overflow-clip relative rounded-[inherit] size-full cursor-pointer hover:bg-gray-100 transition-colors">
         <EyedropperLight />
       </div>
@@ -309,7 +304,7 @@ function HueBar({ hue, onChange }: { hue: number; onChange: (h: number) => void 
   return (
     <div
       className="h-[16px] relative shrink-0 w-full cursor-pointer touch-none"
-      data-name="HueBar"
+     
       ref={containerRef}
       onPointerDown={handleDown}
     >
@@ -320,7 +315,7 @@ function HueBar({ hue, onChange }: { hue: number; onChange: (h: number) => void 
       <div
         className="absolute bg-[#020202] size-[24px] top-1/2 -translate-y-1/2 cursor-ew-resize border border-white shadow-sm -ml-[12px]"
         style={{ left: `${(visualHue / 360) * 100}%` }}
-        data-name="Handle"
+       
       />
     </div>
   );
@@ -367,7 +362,7 @@ function OpacityBar({ opacity, hue, chroma, lightness, onChange }: { opacity: nu
   return (
     <div
       className="h-[16px] relative shrink-0 w-full cursor-pointer touch-none"
-      data-name="OpacityBar"
+     
       ref={containerRef}
       onPointerDown={handleDown}
     >
@@ -391,7 +386,7 @@ function OpacityBar({ opacity, hue, chroma, lightness, onChange }: { opacity: nu
       <div
         className="absolute bg-[#020202] size-[24px] top-1/2 -translate-y-1/2 cursor-ew-resize border border-white shadow-sm -ml-[12px]"
         style={{ left: `${opacity}%` }}
-        data-name="Handle"
+       
       />
     </div>
   );
@@ -399,7 +394,7 @@ function OpacityBar({ opacity, hue, chroma, lightness, onChange }: { opacity: nu
 
 function CaretDownLight() {
   return (
-    <div className="relative shrink-0 size-[20px] xl:size-[25px] 2xl:size-[28.31px]" data-name="caret-down-light">
+    <div className="relative shrink-0 size-[20px] xl:size-[25px] 2xl:size-[28.31px]">
       <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 28.31 28.31">
         <g id="caret-down-light">
           <path d={svgPathsK.p1efa0f00} fill="var(--fill-0, #18180F)" id="Vector" />
@@ -411,15 +406,15 @@ function CaretDownLight() {
 
 function InputTypeDropDown() {
   return (
-    <div className="content-stretch flex items-center relative shrink-0 border border-[#c4c4c4] border-solid" data-name="InputTypeDropDown">
+    <div className="content-stretch flex items-center relative shrink-0 border border-[#c4c4c4] border-solid">
       {/* Type */}
       <div className="content-stretch flex flex-col items-center justify-center px-[8px] xl:px-[12px] 2xl:px-[16px] relative shrink-0">
         <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[14px] xl:text-[17px] 2xl:text-[21.33px] w-full">Hex</p>
       </div>
       {/* Chevron */}
-      <div className="content-stretch flex h-full items-center relative shrink-0" data-name="Chevron">
-        <div className="bg-[#c4c4c4] h-full shrink-0 w-px" data-name="Div" />
-        <div className="content-stretch flex flex-col items-center justify-center overflow-clip px-[4px] relative shrink-0" data-name="plus">
+      <div className="content-stretch flex h-full items-center relative shrink-0">
+        <div className="bg-[#c4c4c4] h-full shrink-0 w-px" />
+        <div className="content-stretch flex flex-col items-center justify-center overflow-clip px-[4px] relative shrink-0">
           <CaretDownLight />
         </div>
       </div>
@@ -543,14 +538,14 @@ function ColorInput({ hue, chroma, lightness, opacity, onColorChange, onOpacityC
   };
 
   return (
-    <div className="content-stretch flex gap-[8px] xl:gap-[12px] 2xl:gap-[16px] items-stretch relative w-full h-[32px] xl:h-[40px] 2xl:h-[50px]" data-name="ColorInput">
+    <div className="content-stretch flex gap-[8px] xl:gap-[12px] 2xl:gap-[16px] items-stretch relative w-full h-[32px] xl:h-[40px] 2xl:h-[50px]">
       <InputTypeDropDown />
 
       {/* Input Group */}
-      <div className="basis-0 content-stretch flex grow items-center justify-between min-h-px min-w-px relative shrink-0 border border-[#c4c4c4] border-solid" data-name="Input">
+      <div className="basis-0 content-stretch flex grow items-center justify-between min-h-px min-w-px relative shrink-0 border border-[#c4c4c4] border-solid">
 
         {/* Hex Input */}
-        <div className="basis-0 grow min-h-px min-w-px relative shrink-0" data-name="InputField">
+        <div className="basis-0 grow min-h-px min-w-px relative shrink-0">
           <div className="flex flex-col items-center justify-center size-full">
             <div className="content-stretch flex flex-col items-center justify-center px-[8px] xl:px-[12px] 2xl:px-[16px] relative w-full">
               <input
@@ -568,7 +563,7 @@ function ColorInput({ hue, chroma, lightness, opacity, onColorChange, onOpacityC
         <div className="bg-[#c4c4c4] h-full shrink-0 w-px" />
 
         {/* Opacity */}
-        <div className="content-stretch flex gap-[8px] items-center justify-center px-[8px] xl:px-[12px] 2xl:px-[16px] relative shrink-0" data-name="Opacity">
+        <div className="content-stretch flex gap-[8px] items-center justify-center px-[8px] xl:px-[12px] 2xl:px-[16px] relative shrink-0">
           <input
             value={localOpacity}
             onFocus={(e: React.FocusEvent<HTMLInputElement>) => e.target.select()}
@@ -639,7 +634,7 @@ function ControlsNewColorScale({ palette, onChange, min, max, steps, curve }: {
   const handleFullColorChange = (h: number, c: number, l: number) => onChange({ hue: h, chroma: c, lightness: l });
 
   return (
-    <div className="bg-[#f5f5f5] flex-1 relative w-full overflow-auto" data-name="Controls--NewColorScale">
+    <div className="bg-[#f5f5f5] flex-1 relative w-full overflow-auto">
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_1px_0px_0px] border-solid inset-0 pointer-events-none" />
       <div className="size-full">
         <div className="content-stretch flex flex-col gap-[24px] items-start pb-[24px] pt-[16px] px-[24px] relative w-full">
@@ -687,7 +682,7 @@ export default function ControlPanel({ palette, onChange, min, max, steps, curve
   }
 
   return (
-    <div className="bg-[#f5f5f5] flex flex-col items-start relative size-full" data-name="ControlPanel">
+    <div className="bg-[#f5f5f5] flex flex-col items-start relative size-full">
       <ControlPanelHeader />
       <ControlsNewColorScale palette={palette} onChange={onChange} min={min} max={max} steps={steps} curve={curve} />
     </div>
