@@ -2,6 +2,7 @@
     "name": "Replicate Attached Design",
     "version": "0.7.1",
     "private": true,
+    "license": "MIT",
     "dependencies": {
         "@radix-ui/react-accordion": "^1.2.3",
         "@radix-ui/react-alert-dialog": "^1.1.6",
