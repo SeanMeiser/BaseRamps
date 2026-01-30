@@ -919,32 +919,97 @@ function ExportLight() {
   );
 }
 
-function Export() {
+type ExportModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  onExport: (format: 'hex' | 'oklch') => void;
+};
+
+function ExportModal({ isOpen, onClose, onExport }: ExportModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
   return (
-    <div className="bg-[#020202] content-stretch flex gap-[8px] items-center justify-center pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] px-[16px] relative shrink-0">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div
+        ref={modalRef}
+        className="bg-white border border-[#c4c4c4] shadow-lg w-[400px]"
+      >
+        <div className="bg-[#f5f5f5] border-b border-[#c4c4c4] px-[24px] py-[16px]">
+          <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[18px] xl:text-[20px] 2xl:text-[22px] text-[#18180f]">
+            Export Color Palette
+          </p>
+        </div>
+        <div className="px-[24px] py-[24px]">
+          <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[14px] xl:text-[15px] 2xl:text-[16px] text-[#18180f] mb-[16px]">
+            Choose a color format:
+          </p>
+          <div className="flex flex-col gap-[12px]">
+            <button
+              onClick={() => onExport('hex')}
+              className="bg-[#020202] text-white px-[24px] py-[16px] font-['PP_Neue_Montreal:Book',sans-serif] text-[14px] xl:text-[15px] 2xl:text-[16px] hover:bg-[#333] active:bg-[#000] active:scale-[0.98] transition-all cursor-pointer"
+            >
+              Download .json (HEX)
+            </button>
+            <button
+              onClick={() => onExport('oklch')}
+              className="bg-[#020202] text-white px-[24px] py-[16px] font-['PP_Neue_Montreal:Book',sans-serif] text-[14px] xl:text-[15px] 2xl:text-[16px] hover:bg-[#333] active:bg-[#000] active:scale-[0.98] transition-all cursor-pointer"
+            >
+              Download .json (OKLCH)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Export({ onClick }: { onClick: () => void }) {
+  return (
+    <div
+      className="bg-[#020202] content-stretch flex gap-[8px] items-center justify-center pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] px-[16px] relative shrink-0 cursor-pointer hover:bg-[#333] active:bg-[#000] active:scale-[0.98] transition-all"
+      onClick={onClick}
+    >
       <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap text-white">Export</p>
       <ExportLight />
     </div>
   );
 }
 
-function ButtonGroup() {
+function ButtonGroup({ onExportClick }: { onExportClick: () => void }) {
   return (
     <div className="content-stretch flex items-center justify-end relative shrink-0">
       <GithubButton />
-      <Export />
+      <Export onClick={onExportClick} />
     </div>
   );
 }
 
-function Navigation() {
+function Navigation({ onExportClick }: { onExportClick: () => void }) {
   return (
     <div className="bg-[#f5f5f5] relative shrink-0 w-full">
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_1px] border-solid inset-0 pointer-events-none" />
       <div className="flex flex-row items-center w-full">
         <div className="content-stretch flex items-center justify-between pl-[24px] pr-0 py-0 relative w-full">
           <p className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[12px] xl:text-[14px] 2xl:text-[16px] text-black text-nowrap">BASE RAMPS</p>
-          <ButtonGroup />
+          <ButtonGroup onExportClick={onExportClick} />
         </div>
       </div>
     </div>
@@ -1556,7 +1621,8 @@ function Main({
   onAdd,
   onDelete,
   onPaletteChange,
-  onStepSelect
+  onStepSelect,
+  onExportClick
 }: {
   min: number;
   max: number;
@@ -1570,10 +1636,11 @@ function Main({
   onDelete: (id: string) => void;
   onPaletteChange: (id: string, updates: Partial<PaletteData>) => void;
   onStepSelect?: (id: string, stepIndex: number) => void;
+  onExportClick: () => void;
 }) {
   return (
     <div className="content-stretch flex flex-col flex-1 items-start relative h-screen overflow-hidden">
-      <Navigation />
+      <Navigation onExportClick={onExportClick} />
       <PaletteArea
         min={min}
         max={max}
@@ -1668,6 +1735,7 @@ function Global() {
     opacity: 100
   });
   const [selectedId, setSelectedId] = useState<string>('system');
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   const handleRangeChange = (newMin: number, newMax: number) => {
     setRange({ min: newMin, max: newMax });
@@ -1740,6 +1808,82 @@ function Global() {
     handlePaletteChange(id, { lightness: oklchLightness });
   };
 
+  const handleExport = (format: 'hex' | 'oklch') => {
+    const getLValue = (index: number) => {
+      if (steps <= 1) return range.max;
+      const x = index / (steps - 1);
+      const curveY = getCurveY(x, curve);
+      const val = range.max - (curveY * (range.max - range.min));
+      return Math.round(Math.max(0, Math.min(100, val)));
+    };
+
+    const railLightnesses = Array.from({ length: steps }).map((_, i) => getLValue(i));
+
+    // Generate colors for all palettes
+    const allPalettes = [neutralPalette, ...palettes];
+    const exportData: Record<string, any> = {};
+
+    allPalettes.forEach((palette) => {
+      const { colors } = generateOklchRamp(
+        palette.hue,
+        palette.chroma,
+        palette.lightness,
+        railLightnesses
+      );
+
+      if (format === 'hex') {
+        // Apply opacity blending for hex format
+        const hexColors = colors.map((colorHex) => {
+          const [r, g, b] = hexToRgb(colorHex);
+          const [r2, g2, b2] = blendWithWhite(r, g, b, palette.opacity);
+          return rgbToHex(r2, g2, b2);
+        });
+        exportData[palette.name] = hexColors.reduce((acc, color, i) => {
+          acc[(i + 1) * 100] = color;
+          return acc;
+        }, {} as Record<number, string>);
+      } else {
+        // OKLCH format
+        const oklchColors = colors.map((colorHex) => {
+          const oklchColor = toOklch(colorHex);
+          return {
+            l: oklchColor?.l?.toFixed(4),
+            c: oklchColor?.c?.toFixed(4),
+            h: oklchColor?.h?.toFixed(2)
+          };
+        });
+        exportData[palette.name] = oklchColors.reduce((acc, color, i) => {
+          acc[(i + 1) * 100] = `oklch(${color.l} ${color.c} ${color.h})`;
+          return acc;
+        }, {} as Record<number, string>);
+      }
+    });
+
+    // Create and download JSON file
+    const jsonString = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `color-palette-${format}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    setIsExportModalOpen(false);
+    toast("Palette exported", {
+      description: `Downloaded as ${format.toUpperCase()} format`,
+      style: {
+        backgroundColor: "#18180f",
+        color: "#ffffff",
+        border: "1px solid #333",
+        borderRadius: "8px",
+        fontFamily: "'PP_Neue_Montreal:Book', sans-serif"
+      }
+    });
+  };
+
   const selectedPalette = selectedId === 'neutral' ? neutralPalette : palettes.find((p: PaletteData) => p.id === selectedId);
 
   return (
@@ -1769,6 +1913,7 @@ function Global() {
         onDelete={handleDeletePalette}
         onPaletteChange={handlePaletteChange}
         onStepSelect={handleStepSelect}
+        onExportClick={() => setIsExportModalOpen(true)}
       />
       <FaviconUpdater
         min={range.min}
@@ -1776,6 +1921,11 @@ function Global() {
         steps={steps}
         curve={curve}
         selectedPalette={selectedPalette}
+      />
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        onExport={handleExport}
       />
     </div>
   );
