@@ -2,7 +2,6 @@ import svgPaths from "./svg-jpfemsx01m";
 import clsx from "clsx";
 import { Copy, Check, Github, ArrowUpRight } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from "react";
-import { createPortal } from "react-dom";
 import { Toaster, toast } from "sonner";
 import { findMaxChroma } from '../lib/gamut/oklchGamut';
 type Curve = {
@@ -946,7 +945,7 @@ function ExportModal({ isOpen, onClose, onExport }: ExportModalProps) {
 
   if (!isOpen) return null;
 
-  const modalContent = (
+  return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
       <div
         ref={modalRef}
@@ -983,13 +982,6 @@ function ExportModal({ isOpen, onClose, onExport }: ExportModalProps) {
       </div>
     </div>
   );
-
-  // Use createPortal to render modal to document.body to avoid z-index stacking context issues
-  if (typeof document !== 'undefined' && document.body) {
-    return createPortal(modalContent, document.body);
-  }
-  // Fallback if document.body is not available (shouldn't happen in normal React app)
-  return modalContent;
 }
 
 function Export({ onClick }: { onClick: () => void }) {
