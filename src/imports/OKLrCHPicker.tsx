@@ -183,18 +183,22 @@ export default function OKLrCHPicker({ hue, lightness, chroma, railLightnesses, 
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        // 3. Draw All Rail Lightness Lines (solid, not dotted)
+        // 3. Draw All Rail Lightness Lines (current is solid, others are dashed)
         const railsInOklch = railLightnesses.map(hslL => hslL / 100);
         railsInOklch.forEach((railL, index) => {
             const railY = (1 - railL) * height;
             ctx.beginPath();
             ctx.moveTo(0, railY);
             ctx.lineTo(width, railY);
-            // Current lightness gets brighter line, others are more subtle
+            // Current lightness gets brighter solid line, others are dashed and subtle
             const isCurrent = Math.abs(railL - lightness) < 0.01;
             ctx.strokeStyle = isCurrent ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.4)';
             ctx.lineWidth = isCurrent ? 2 : 1;
+            if (!isCurrent) {
+                ctx.setLineDash([4, 4]);
+            }
             ctx.stroke();
+            ctx.setLineDash([]);
         });
 
         // 4. Draw Dots for Ramp Colors
