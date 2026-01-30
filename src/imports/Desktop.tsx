@@ -947,33 +947,37 @@ function ExportModal({ isOpen, onClose, onExport }: ExportModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
       <div
         ref={modalRef}
-        className="bg-white border border-[#c4c4c4] shadow-lg w-[400px]"
+        className="bg-[#f5f5f5] border border-[#c4c4c4] shadow-2xl w-[480px] xl:w-[520px] 2xl:w-[560px]"
       >
-        <div className="bg-[#f5f5f5] border-b border-[#c4c4c4] px-[24px] py-[16px]">
-          <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[18px] xl:text-[20px] 2xl:text-[22px] text-[#18180f]">
+        <div className="bg-[#f5f5f5] border-b border-[#c4c4c4] px-[24px] py-[16px] xl:py-[18px] 2xl:py-[20px]">
+          <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[16px] xl:text-[18px] 2xl:text-[20px] text-[#18180f]">
             Export Color Palette
           </p>
         </div>
-        <div className="px-[24px] py-[24px]">
-          <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[14px] xl:text-[15px] 2xl:text-[16px] text-[#18180f] mb-[16px]">
+        <div className="bg-[#f5f5f5] px-[24px] py-[24px] xl:py-[28px] 2xl:py-[32px]">
+          <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[12px] xl:text-[14px] 2xl:text-[16px] text-[#18180f] mb-[16px] xl:mb-[18px] 2xl:mb-[20px]">
             Choose a color format:
           </p>
-          <div className="flex flex-col gap-[12px]">
-            <button
+          <div className="flex flex-col gap-[8px] xl:gap-[10px] 2xl:gap-[12px]">
+            <div
               onClick={() => onExport('hex')}
-              className="bg-[#020202] text-white px-[24px] py-[16px] font-['PP_Neue_Montreal:Book',sans-serif] text-[14px] xl:text-[15px] 2xl:text-[16px] hover:bg-[#333] active:bg-[#000] active:scale-[0.98] transition-all cursor-pointer"
+              className="bg-white border border-[#c4c4c4] content-stretch flex items-center justify-between relative shrink-0 w-full cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all"
             >
-              Download .json (HEX)
-            </button>
-            <button
+              <div className="content-stretch flex flex-col items-start justify-center pb-[12px] pt-[8px] px-[16px] relative shrink-0 flex-1">
+                <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px]">Download .json (HEX)</p>
+              </div>
+            </div>
+            <div
               onClick={() => onExport('oklch')}
-              className="bg-[#020202] text-white px-[24px] py-[16px] font-['PP_Neue_Montreal:Book',sans-serif] text-[14px] xl:text-[15px] 2xl:text-[16px] hover:bg-[#333] active:bg-[#000] active:scale-[0.98] transition-all cursor-pointer"
+              className="bg-white border border-[#c4c4c4] content-stretch flex items-center justify-between relative shrink-0 w-full cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all"
             >
-              Download .json (OKLCH)
-            </button>
+              <div className="content-stretch flex flex-col items-start justify-center pb-[12px] pt-[8px] px-[16px] relative shrink-0 flex-1">
+                <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px]">Download .json (OKLCH)</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
