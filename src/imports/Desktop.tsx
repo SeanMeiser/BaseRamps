@@ -2,6 +2,7 @@ import svgPaths from "./svg-jpfemsx01m";
 import clsx from "clsx";
 import { Copy, Check, Github, ArrowUpRight } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Toaster, toast } from "sonner";
 import { findMaxChroma } from '../lib/gamut/oklchGamut';
 type Curve = {
@@ -945,8 +946,8 @@ function ExportModal({ isOpen, onClose, onExport }: ExportModalProps) {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30">
       <div
         ref={modalRef}
         className="bg-[#f5f5f5] border border-[#c4c4c4] shadow-2xl w-[480px] xl:w-[520px] 2xl:w-[560px]"
@@ -982,6 +983,8 @@ function ExportModal({ isOpen, onClose, onExport }: ExportModalProps) {
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }
 
 function Export({ onClick }: { onClick: () => void }) {
