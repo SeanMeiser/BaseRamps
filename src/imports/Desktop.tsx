@@ -919,32 +919,35 @@ function ExportLight() {
   );
 }
 
-function Export() {
+function Export({ onClick }: { onClick: () => void }) {
   return (
-    <div className="bg-[#020202] content-stretch flex gap-[8px] items-center justify-center pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] px-[16px] relative shrink-0">
+    <div
+      className="bg-[#020202] content-stretch flex gap-[8px] items-center justify-center pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] px-[16px] relative shrink-0 cursor-pointer hover:bg-[#1a1a1a] transition-colors"
+      onClick={onClick}
+    >
       <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap text-white">Export</p>
       <ExportLight />
     </div>
   );
 }
 
-function ButtonGroup() {
+function ButtonGroup({ onExport }: { onExport: () => void }) {
   return (
     <div className="content-stretch flex items-center justify-end relative shrink-0">
       <GithubButton />
-      <Export />
+      <Export onClick={onExport} />
     </div>
   );
 }
 
-function Navigation() {
+function Navigation({ onExport }: { onExport: () => void }) {
   return (
     <div className="bg-[#f5f5f5] relative shrink-0 w-full">
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_1px] border-solid inset-0 pointer-events-none" />
       <div className="flex flex-row items-center w-full">
         <div className="content-stretch flex items-center justify-between pl-[24px] pr-0 py-0 relative w-full">
           <p className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[12px] xl:text-[14px] 2xl:text-[16px] text-black text-nowrap">BASE RAMPS</p>
-          <ButtonGroup />
+          <ButtonGroup onExport={onExport} />
         </div>
       </div>
     </div>
@@ -1556,7 +1559,8 @@ function Main({
   onAdd,
   onDelete,
   onPaletteChange,
-  onStepSelect
+  onStepSelect,
+  onExport
 }: {
   min: number;
   max: number;
@@ -1570,10 +1574,11 @@ function Main({
   onDelete: (id: string) => void;
   onPaletteChange: (id: string, updates: Partial<PaletteData>) => void;
   onStepSelect?: (id: string, stepIndex: number) => void;
+  onExport: () => void;
 }) {
   return (
     <div className="content-stretch flex flex-col flex-1 items-start relative h-screen overflow-hidden">
-      <Navigation />
+      <Navigation onExport={onExport} />
       <PaletteArea
         min={min}
         max={max}
@@ -1740,6 +1745,69 @@ function Global() {
     handlePaletteChange(id, { lightness: oklchLightness });
   };
 
+  const handleExport = () => {
+    // Calculate lightness values for each step
+    const getLightnesses = () => {
+      const lightnesses: number[] = [];
+      for (let i = 0; i < steps; i++) {
+        if (steps <= 1) {
+          lightnesses.push(range.max);
+        } else {
+          const x = i / (steps - 1);
+          const curveY = getCurveY(x, curve);
+          const val = range.max - (curveY * (range.max - range.min));
+          lightnesses.push(Math.round(Math.max(0, Math.min(100, val))));
+        }
+      }
+      return lightnesses;
+    };
+
+    const railLightnesses = getLightnesses();
+
+    // Generate color data for all palettes following Design Token Community Group structure
+    const exportData: Record<string, Record<string, string>> = {};
+
+    // Add neutral palette
+    const neutralRamp = generateOklchRamp(
+      neutralPalette.hue,
+      neutralPalette.chroma,
+      neutralPalette.lightness,
+      railLightnesses
+    );
+    exportData[neutralPalette.name] = {};
+    neutralRamp.colors.forEach((color, index) => {
+      const stepNumber = (index + 1) * 100;
+      exportData[neutralPalette.name][String(stepNumber)] = color;
+    });
+
+    // Add all other palettes
+    palettes.forEach((palette) => {
+      const ramp = generateOklchRamp(
+        palette.hue,
+        palette.chroma,
+        palette.lightness,
+        railLightnesses
+      );
+      exportData[palette.name] = {};
+      ramp.colors.forEach((color, index) => {
+        const stepNumber = (index + 1) * 100;
+        exportData[palette.name][String(stepNumber)] = color;
+      });
+    });
+
+    // Create and download JSON file
+    const jsonString = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'color-ramps.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const selectedPalette = selectedId === 'neutral' ? neutralPalette : palettes.find((p: PaletteData) => p.id === selectedId);
 
   return (
@@ -1769,6 +1837,7 @@ function Global() {
         onDelete={handleDeletePalette}
         onPaletteChange={handlePaletteChange}
         onStepSelect={handleStepSelect}
+        onExport={handleExport}
       />
       <FaviconUpdater
         min={range.min}
