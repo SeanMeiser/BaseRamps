@@ -217,6 +217,9 @@ function ColorPicker({ hue, chroma, lightness, onChange, min, max, steps, curve 
     onChange(c, l);
   };
 
+  // Generate the ramp colors to show as dots on the picker
+  const { colors: rampColors } = generateOklchRamp(currentOklchHue, currentChroma, currentLightness, railLightnesses);
+
   return (
     <div className="bg-white relative shrink-0 w-full aspect-square select-none touch-none">
       <OKLrCHPicker
@@ -225,6 +228,7 @@ function ColorPicker({ hue, chroma, lightness, onChange, min, max, steps, curve 
         chroma={currentChroma}
         railLightnesses={railLightnesses}
         onChange={handleOklchChange}
+        rampColors={rampColors}
       />
     </div>
   );

@@ -3,6 +3,7 @@ import { converter } from 'culori';
 import { getGamutBoundary, isDisplayable } from '../lib/gamut/oklchGamut';
 
 const toRgb = converter('rgb');
+const toOklch = converter('oklch');
 
 interface OKLrCHPickerProps {
     hue: number;              // Current hue (0-360)
@@ -10,9 +11,10 @@ interface OKLrCHPickerProps {
     chroma: number;           // Current chroma (0-0.4)
     railLightnesses: number[]; // Discrete lightness steps from system (HSL 0-100)
     onChange: (c: number, l: number) => void;
+    rampColors?: string[];    // Generated ramp colors to show as dots
 }
 
-export default function OKLrCHPicker({ hue, lightness, chroma, railLightnesses, onChange }: OKLrCHPickerProps) {
+export default function OKLrCHPicker({ hue, lightness, chroma, railLightnesses, onChange, rampColors }: OKLrCHPickerProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     // Use a ref for the cached gradient to persist it across renders without triggering re-renders
@@ -181,18 +183,50 @@ export default function OKLrCHPicker({ hue, lightness, chroma, railLightnesses, 
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        // 3. Draw Lightness Lock (Rail) Indicator
-        const lockY = (1 - lightness) * height;
-        ctx.beginPath();
-        ctx.moveTo(0, lockY);
-        ctx.lineTo(width, lockY);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([4, 4]);
-        ctx.stroke();
-        ctx.setLineDash([]);
+        // 3. Draw All Rail Lightness Lines (solid, not dotted)
+        const railsInOklch = railLightnesses.map(hslL => hslL / 100);
+        railsInOklch.forEach((railL, index) => {
+            const railY = (1 - railL) * height;
+            ctx.beginPath();
+            ctx.moveTo(0, railY);
+            ctx.lineTo(width, railY);
+            // Current lightness gets brighter line, others are more subtle
+            const isCurrent = Math.abs(railL - lightness) < 0.01;
+            ctx.strokeStyle = isCurrent ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = isCurrent ? 2 : 1;
+            ctx.stroke();
+        });
 
-        // 4. Draw Handle
+        // 4. Draw Dots for Ramp Colors
+        if (rampColors && rampColors.length === railLightnesses.length) {
+            rampColors.forEach((colorHex, index) => {
+                // Convert hex to OKLCH to get chroma and lightness
+                const rgbMatch = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(colorHex);
+                if (rgbMatch) {
+                    const r = parseInt(rgbMatch[1], 16) / 255;
+                    const g = parseInt(rgbMatch[2], 16) / 255;
+                    const b = parseInt(rgbMatch[3], 16) / 255;
+                    const oklchColor = toOklch({ mode: 'rgb', r, g, b });
+
+                    if (oklchColor && oklchColor.c !== undefined && oklchColor.l !== undefined) {
+                        const dotChroma = oklchColor.c;
+                        const dotLightness = oklchColor.l;
+                        const dotPos = toCanvasCoords(dotLightness, dotChroma);
+
+                        // Draw small white dot
+                        ctx.beginPath();
+                        ctx.arc(dotPos.x, dotPos.y, 3, 0, Math.PI * 2);
+                        ctx.fillStyle = 'white';
+                        ctx.fill();
+                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+            });
+        }
+
+        // 5. Draw Handle
         // If the stored chroma is out of gamut at this lightness, display the handle
         // at the gamut boundary (max displayable chroma) rather than outside the visible area
         let displayChroma = chroma;
@@ -234,7 +268,7 @@ export default function OKLrCHPicker({ hue, lightness, chroma, railLightnesses, 
             ctx.fill();
         }
 
-    }, [hue, lightness, chroma, dimensions, boundary, toCanvasCoords]);
+    }, [hue, lightness, chroma, dimensions, boundary, toCanvasCoords, railLightnesses, rampColors]);
 
     // Handle pointer events
     const handleMove = useCallback((e: PointerEvent | globalThis.PointerEvent) => {
