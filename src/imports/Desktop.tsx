@@ -921,13 +921,13 @@ function ExportLight() {
 
 function Export({ onClick }: { onClick: () => void }) {
   return (
-    <div
-      className="bg-[#020202] content-stretch flex gap-[8px] items-center justify-center pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] px-[16px] relative shrink-0 cursor-pointer hover:bg-[#1a1a1a] transition-colors"
+    <button
       onClick={onClick}
+      className="bg-[#020202] content-stretch flex gap-[8px] items-center justify-center pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] px-[16px] relative shrink-0 cursor-pointer hover:bg-[#1a1a1a] transition-colors active:scale-[0.98] border-none"
     >
       <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap text-white">Export</p>
       <ExportLight />
-    </div>
+    </button>
   );
 }
 
@@ -1745,67 +1745,72 @@ function Global() {
     handlePaletteChange(id, { lightness: oklchLightness });
   };
 
-  const handleExport = () => {
-    // Calculate lightness values for each step
-    const getLightnesses = () => {
-      const lightnesses: number[] = [];
-      for (let i = 0; i < steps; i++) {
-        if (steps <= 1) {
-          lightnesses.push(range.max);
-        } else {
-          const x = i / (steps - 1);
-          const curveY = getCurveY(x, curve);
-          const val = range.max - (curveY * (range.max - range.min));
-          lightnesses.push(Math.round(Math.max(0, Math.min(100, val))));
-        }
+  const getLightnesses = () => {
+    const lightnesses: number[] = [];
+    for (let i = 0; i < steps; i++) {
+      if (steps <= 1) {
+        lightnesses.push(range.max);
+      } else {
+        const x = i / (steps - 1);
+        const curveY = getCurveY(x, curve);
+        const val = range.max - (curveY * (range.max - range.min));
+        lightnesses.push(Math.round(Math.max(0, Math.min(100, val))));
       }
-      return lightnesses;
-    };
+    }
+    return lightnesses;
+  };
 
-    const railLightnesses = getLightnesses();
+  const handleExport = () => {
+    try {
+      const railLightnesses = getLightnesses();
 
-    // Generate color data for all palettes following Design Token Community Group structure
-    const exportData: Record<string, Record<string, string>> = {};
+      // Generate color data for all palettes following Design Token Community Group structure
+      const exportData: Record<string, Record<string, string>> = {};
 
-    // Add neutral palette
-    const neutralRamp = generateOklchRamp(
-      neutralPalette.hue,
-      neutralPalette.chroma,
-      neutralPalette.lightness,
-      railLightnesses
-    );
-    exportData[neutralPalette.name] = {};
-    neutralRamp.colors.forEach((color, index) => {
-      const stepNumber = (index + 1) * 100;
-      exportData[neutralPalette.name][String(stepNumber)] = color;
-    });
-
-    // Add all other palettes
-    palettes.forEach((palette) => {
-      const ramp = generateOklchRamp(
-        palette.hue,
-        palette.chroma,
-        palette.lightness,
+      // Add neutral palette
+      const neutralRamp = generateOklchRamp(
+        neutralPalette.hue,
+        neutralPalette.chroma,
+        neutralPalette.lightness,
         railLightnesses
       );
-      exportData[palette.name] = {};
-      ramp.colors.forEach((color, index) => {
+      exportData[neutralPalette.name] = {};
+      neutralRamp.colors.forEach((color, index) => {
         const stepNumber = (index + 1) * 100;
-        exportData[palette.name][String(stepNumber)] = color;
+        exportData[neutralPalette.name][String(stepNumber)] = color;
       });
-    });
 
-    // Create and download JSON file
-    const jsonString = JSON.stringify(exportData, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'color-ramps.json';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+      // Add all other palettes
+      palettes.forEach((palette) => {
+        const ramp = generateOklchRamp(
+          palette.hue,
+          palette.chroma,
+          palette.lightness,
+          railLightnesses
+        );
+        exportData[palette.name] = {};
+        ramp.colors.forEach((color, index) => {
+          const stepNumber = (index + 1) * 100;
+          exportData[palette.name][String(stepNumber)] = color;
+        });
+      });
+
+      // Create and download JSON file
+      const jsonString = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'color-ramps.json';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success('Color ramps exported successfully');
+    } catch (error) {
+      console.error('Export failed:', error);
+      toast.error('Failed to export color ramps');
+    }
   };
 
   const selectedPalette = selectedId === 'neutral' ? neutralPalette : palettes.find((p: PaletteData) => p.id === selectedId);
