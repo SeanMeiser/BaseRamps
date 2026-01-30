@@ -2,7 +2,6 @@ import svgPaths from "./svg-jpfemsx01m";
 import clsx from "clsx";
 import { Copy, Check, Github, ArrowUpRight } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from "react";
-import { createPortal } from "react-dom";
 import { Toaster, toast } from "sonner";
 import { findMaxChroma } from '../lib/gamut/oklchGamut';
 type Curve = {
@@ -920,120 +919,90 @@ function ExportLight() {
   );
 }
 
-type ExportModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  onExport: (format: 'hex' | 'oklch') => void;
-};
-
-function ExportModal({ isOpen, onClose, onExport }: ExportModalProps) {
-  const modalRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+function ExportDropdown({ onExport }: { onExport: (format: 'hex' | 'oklch') => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-        onClose();
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
       }
     }
 
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
     }
-  }, [isOpen, onClose]);
 
-  if (!isOpen || !mounted) return null;
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
 
-  const modalContent = (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.3)'
-      }}
-    >
+  const handleExportClick = (format: 'hex' | 'oklch') => {
+    onExport(format);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative" ref={containerRef}>
       <div
-        ref={modalRef}
-        className="bg-[#f5f5f5] border border-[#c4c4c4] shadow-2xl w-[480px] xl:w-[520px] 2xl:w-[560px]"
+        className="bg-[#020202] content-stretch flex gap-[8px] items-center justify-center pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] px-[16px] relative shrink-0 cursor-pointer hover:bg-[#333] active:bg-[#000] active:scale-[0.98] transition-all"
+        onClick={() => setIsOpen(!isOpen)}
       >
-        <div className="bg-[#f5f5f5] border-b border-[#c4c4c4] px-[24px] py-[16px] xl:py-[18px] 2xl:py-[20px]">
-          <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[16px] xl:text-[18px] 2xl:text-[20px] text-[#18180f]">
-            Export Color Palette
-          </p>
-        </div>
-        <div className="bg-[#f5f5f5] px-[24px] py-[24px] xl:py-[28px] 2xl:py-[32px]">
-          <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[12px] xl:text-[14px] 2xl:text-[16px] text-[#18180f] mb-[16px] xl:mb-[18px] 2xl:mb-[20px]">
-            Choose a color format:
-          </p>
-          <div className="flex flex-col gap-[8px] xl:gap-[10px] 2xl:gap-[12px]">
-            <div
-              onClick={() => onExport('hex')}
-              className="bg-white border border-[#c4c4c4] content-stretch flex items-center justify-between relative shrink-0 w-full cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all"
-            >
-              <div className="content-stretch flex flex-col items-start justify-center pb-[12px] pt-[8px] px-[16px] relative shrink-0 flex-1">
-                <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px]">Download .json (HEX)</p>
-              </div>
-            </div>
-            <div
-              onClick={() => onExport('oklch')}
-              className="bg-white border border-[#c4c4c4] content-stretch flex items-center justify-between relative shrink-0 w-full cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all"
-            >
-              <div className="content-stretch flex flex-col items-start justify-center pb-[12px] pt-[8px] px-[16px] relative shrink-0 flex-1">
-                <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px]">Download .json (OKLCH)</p>
-              </div>
-            </div>
+        <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap text-white">Export</p>
+        <ExportLight />
+      </div>
+
+      {isOpen && (
+        <div className="absolute top-full right-0 z-50 bg-white border border-[#c4c4c4] shadow-lg min-w-[200px]">
+          <div
+            className="px-[16px] pt-[10px] pb-[12px] cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all border-b border-[#e6e6e6]"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleExportClick('hex');
+            }}
+          >
+            <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px]">
+              Download .json (HEX)
+            </p>
+          </div>
+          <div
+            className="px-[16px] pt-[10px] pb-[12px] cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleExportClick('oklch');
+            }}
+          >
+            <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px]">
+              Download .json (OKLCH)
+            </p>
           </div>
         </div>
-      </div>
-    </div>
-  );
-
-  return createPortal(modalContent, document.body);
-}
-
-function Export({ onClick }: { onClick: () => void }) {
-  return (
-    <div
-      className="bg-[#020202] content-stretch flex gap-[8px] items-center justify-center pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] px-[16px] relative shrink-0 cursor-pointer hover:bg-[#333] active:bg-[#000] active:scale-[0.98] transition-all"
-      onClick={onClick}
-    >
-      <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap text-white">Export</p>
-      <ExportLight />
+      )}
     </div>
   );
 }
 
-function ButtonGroup({ onExportClick }: { onExportClick: () => void }) {
+function ButtonGroup({ onExport }: { onExport: (format: 'hex' | 'oklch') => void }) {
   return (
     <div className="content-stretch flex items-center justify-end relative shrink-0">
       <GithubButton />
-      <Export onClick={onExportClick} />
+      <ExportDropdown onExport={onExport} />
     </div>
   );
 }
 
-function Navigation({ onExportClick }: { onExportClick: () => void }) {
+function Navigation({ onExport }: { onExport: (format: 'hex' | 'oklch') => void }) {
   return (
     <div className="bg-[#f5f5f5] relative shrink-0 w-full">
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_1px] border-solid inset-0 pointer-events-none" />
       <div className="flex flex-row items-center w-full">
         <div className="content-stretch flex items-center justify-between pl-[24px] pr-0 py-0 relative w-full">
           <p className="font-['JetBrains_Mono:Regular',sans-serif] font-normal leading-[normal] relative shrink-0 text-[12px] xl:text-[14px] 2xl:text-[16px] text-black text-nowrap">BASE RAMPS</p>
-          <ButtonGroup onExportClick={onExportClick} />
+          <ButtonGroup onExport={onExport} />
         </div>
       </div>
     </div>
@@ -1646,7 +1615,7 @@ function Main({
   onDelete,
   onPaletteChange,
   onStepSelect,
-  onExportClick
+  onExport
 }: {
   min: number;
   max: number;
@@ -1660,11 +1629,11 @@ function Main({
   onDelete: (id: string) => void;
   onPaletteChange: (id: string, updates: Partial<PaletteData>) => void;
   onStepSelect?: (id: string, stepIndex: number) => void;
-  onExportClick: () => void;
+  onExport: (format: 'hex' | 'oklch') => void;
 }) {
   return (
     <div className="content-stretch flex flex-col flex-1 items-start relative h-screen overflow-hidden">
-      <Navigation onExportClick={onExportClick} />
+      <Navigation onExport={onExport} />
       <PaletteArea
         min={min}
         max={max}
@@ -1759,7 +1728,6 @@ function Global() {
     opacity: 100
   });
   const [selectedId, setSelectedId] = useState<string>('system');
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   const handleRangeChange = (newMin: number, newMax: number) => {
     setRange({ min: newMin, max: newMax });
@@ -1895,7 +1863,6 @@ function Global() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    setIsExportModalOpen(false);
     toast("Palette exported", {
       description: `Downloaded as ${format.toUpperCase()} format`,
       style: {
@@ -1937,7 +1904,7 @@ function Global() {
         onDelete={handleDeletePalette}
         onPaletteChange={handlePaletteChange}
         onStepSelect={handleStepSelect}
-        onExportClick={() => setIsExportModalOpen(true)}
+        onExport={handleExport}
       />
       <FaviconUpdater
         min={range.min}
@@ -1945,11 +1912,6 @@ function Global() {
         steps={steps}
         curve={curve}
         selectedPalette={selectedPalette}
-      />
-      <ExportModal
-        isOpen={isExportModalOpen}
-        onClose={() => setIsExportModalOpen(false)}
-        onExport={handleExport}
       />
     </div>
   );
