@@ -938,11 +938,10 @@ function ExportModal({ isOpen, onClose, onExport }: ExportModalProps) {
 
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
     }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -985,7 +984,12 @@ function ExportModal({ isOpen, onClose, onExport }: ExportModalProps) {
     </div>
   );
 
-  return createPortal(modalContent, document.body);
+  // Use createPortal to render modal to document.body to avoid z-index stacking context issues
+  if (typeof document !== 'undefined' && document.body) {
+    return createPortal(modalContent, document.body);
+  }
+  // Fallback if document.body is not available (shouldn't happen in normal React app)
+  return modalContent;
 }
 
 function Export({ onClick }: { onClick: () => void }) {
