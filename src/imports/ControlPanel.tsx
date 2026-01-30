@@ -9,7 +9,7 @@ import { generateOklchRamp } from './color-engine';
 
 const toOklch = converter('oklch');
 
-import { findMaxChroma } from '../lib/gamut/oklchGamut';
+import { findMaxChroma, isDisplayable } from '../lib/gamut/oklchGamut';
 
 type PaletteData = {
   id: string;
@@ -503,9 +503,26 @@ function ColorInput({ hue, chroma, lightness, opacity, onColorChange, onOpacityC
   }, [opacity]);
 
   const handleHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
+    let val = e.target.value;
+
+    // Add # prefix if missing
+    if (val && !val.startsWith('#')) {
+      val = '#' + val;
+    }
+
     setHex(val);
+
     // Convert hex → RGB → OKLCH
+    const hexToRgb = (hex: string): [number, number, number] | null => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      if (!result) return null;
+      return [
+        parseInt(result[1], 16),
+        parseInt(result[2], 16),
+        parseInt(result[3], 16)
+      ];
+    };
+
     const rgb = hexToRgb(val);
     if (rgb) {
       const [r, g, b] = rgb;
@@ -513,9 +530,53 @@ function ColorInput({ hue, chroma, lightness, opacity, onColorChange, onOpacityC
       const oklch = toOklch(rgbColor);
       if (oklch) {
         // Extract OKLCH values
-        const h = oklch.h || 0;
-        const c = oklch.c || 0;
-        const l = oklch.l || 0.5;
+        let h = oklch.h || 0;
+        let c = oklch.c || 0;
+        let l = oklch.l || 0.5;
+
+        // Snap lightness to nearest rail value
+        const getLValue = (index: number) => {
+          if (steps <= 1) return max;
+          const x = index / (steps - 1);
+          const solveCubicBezierX = (x: number, x1: number, x2: number): number => {
+            let t = x;
+            for (let i = 0; i < 8; i++) {
+              const xEst = 3 * Math.pow(1 - t, 2) * t * x1 + 3 * (1 - t) * Math.pow(t, 2) * x2 + Math.pow(t, 3);
+              const slope = 3 * Math.pow(1 - t, 2) * x1 - 6 * (1 - t) * t * x1 + 3 * (1 - t) * Math.pow(t, 2) + 6 * (1 - t) * t * x2 - 3 * Math.pow(t, 2) * x2 + 3 * Math.pow(t, 2);
+              if (Math.abs(slope) < 1e-6) break;
+              t -= (xEst - x) / slope;
+            }
+            return Math.max(0, Math.min(1, t));
+          };
+          const getCubicBezierY = (t: number, y1: number, y2: number): number => {
+            return 3 * Math.pow(1 - t, 2) * t * y1 + 3 * (1 - t) * Math.pow(t, 2) * y2 + Math.pow(t, 3);
+          };
+          const t = solveCubicBezierX(x, curve.x1, curve.x2);
+          const curveY = getCubicBezierY(t, curve.y1, curve.y2);
+          const val = max - (curveY * (max - min));
+          return Math.round(Math.max(0, Math.min(100, val)));
+        };
+
+        const railLightnesses = Array.from({ length: steps }).map((_, i) => getLValue(i));
+        const railsInOklch = railLightnesses.map(hslL => hslL / 100);
+
+        // Find nearest rail lightness
+        let nearestL = railsInOklch[0];
+        let minDiff = Math.abs(l - nearestL);
+        for (const railL of railsInOklch) {
+          const diff = Math.abs(l - railL);
+          if (diff < minDiff) {
+            minDiff = diff;
+            nearestL = railL;
+          }
+        }
+
+        // Check gamut and clamp chroma if needed
+        if (!isDisplayable(nearestL, c, h)) {
+          c = findMaxChroma(nearestL, h);
+        }
+
+        l = nearestL;
         onColorChange(h, c, l);
       }
     }
