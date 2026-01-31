@@ -1062,7 +1062,7 @@ function Frame4({ min, max, steps, curve }: { min: number; max: number; steps: n
 
 function SystemRail({ min, max, steps, curve, isSelected }: { min: number; max: number; steps: number; curve: Curve; isSelected: boolean }) {
   return (
-    <div className={`sticky top-0 shrink-0 w-full bg-transparent`}>
+    <div className={`shrink-0 w-full bg-[#f5f5f5]`}>
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_1px] border-solid inset-0 pointer-events-none" />
       <div className="flex flex-col justify-center size-full">
         <div className="content-stretch flex flex-col items-start justify-center px-[24px] py-[8px] relative w-full">
