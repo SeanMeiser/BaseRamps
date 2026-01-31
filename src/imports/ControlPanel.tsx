@@ -10,6 +10,7 @@ import { generateOklchRamp } from './color-engine';
 const toOklch = converter('oklch');
 
 import { findMaxChroma, isDisplayable } from '../lib/gamut/oklchGamut';
+import { getColorName } from './colorNaming';
 
 type PaletteData = {
   id: string;
@@ -18,6 +19,7 @@ type PaletteData = {
   chroma: number;     // OKLCH chroma (0-0.4)
   lightness: number;  // OKLCH lightness (0-1)
   opacity: number;
+  isNameManuallySet?: boolean; // Track if name was manually edited by user
 };
 
 type Curve = {
@@ -688,18 +690,37 @@ function ControlsNewColorScale({ palette, onChange, min, max, steps, curve }: {
   steps: number;
   curve: Curve;
 }) {
-  const handleNameChange = (name: string) => onChange({ name });
-  const handleColorChange = (c: number, l: number) => onChange({ chroma: c, lightness: l });
+  const handleNameChange = (name: string) => onChange({ name, isNameManuallySet: true });
+  const handleColorChange = (c: number, l: number) => {
+    const updates: Partial<PaletteData> = { chroma: c, lightness: l };
+    // Auto-update name if not manually set
+    if (!palette.isNameManuallySet) {
+      updates.name = getColorName(palette.hue, c);
+    }
+    onChange(updates);
+  };
   const handleHueChange = (newHue: number) => {
     // When hue changes, preserve chroma if possible, or clamp to new gamut
     const maxChromaAtCurrentLightness = findMaxChroma(palette.lightness, newHue);
     const clampedChroma = Math.min(palette.chroma, maxChromaAtCurrentLightness);
-    onChange({ hue: newHue, chroma: clampedChroma });
+    const updates: Partial<PaletteData> = { hue: newHue, chroma: clampedChroma };
+    // Auto-update name if not manually set
+    if (!palette.isNameManuallySet) {
+      updates.name = getColorName(newHue, clampedChroma);
+    }
+    onChange(updates);
   };
   const handleOpacityChange = (opacity: number) => onChange({ opacity });
 
   // New handler for full color change from Hex input
-  const handleFullColorChange = (h: number, c: number, l: number) => onChange({ hue: h, chroma: c, lightness: l });
+  const handleFullColorChange = (h: number, c: number, l: number) => {
+    const updates: Partial<PaletteData> = { hue: h, chroma: c, lightness: l };
+    // Auto-update name if not manually set
+    if (!palette.isNameManuallySet) {
+      updates.name = getColorName(h, c);
+    }
+    onChange(updates);
+  };
 
   return (
     <div className="bg-[#f5f5f5] flex-1 relative w-full overflow-auto">

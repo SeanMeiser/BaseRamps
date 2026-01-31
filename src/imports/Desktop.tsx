@@ -806,6 +806,7 @@ function ControlsSystem({ min, max, steps, curve, onRangeChange, onStepsChange, 
 }
 
 import RampControlPanel from "./ControlPanel";
+import { getColorName } from "./colorNaming";
 
 export type PaletteData = {
   id: string;
@@ -814,6 +815,7 @@ export type PaletteData = {
   chroma: number;     // OKLCH chroma (0-0.4)
   lightness: number;  // OKLCH lightness (0-1)
   opacity: number;
+  isNameManuallySet?: boolean; // Track if name was manually edited by user
 };
 
 function CreatorSignature() {
@@ -1747,13 +1749,17 @@ function Global() {
     const newId = `palette-${Date.now()}`;
     const lastPalette = palettes[palettes.length - 1];
 
+    const hue = lastPalette?.hue ?? 0;
+    const chroma = lastPalette?.chroma ?? 0.1;
+
     const newPalette: PaletteData = {
       id: newId,
-      name: "New Ramp",
-      hue: lastPalette?.hue ?? 0,
-      chroma: lastPalette?.chroma ?? 0.1,
+      name: getColorName(hue, chroma),
+      hue,
+      chroma,
       lightness: lastPalette?.lightness ?? 0.5,
-      opacity: lastPalette?.opacity ?? 100
+      opacity: lastPalette?.opacity ?? 100,
+      isNameManuallySet: false
     };
     setPalettes([...palettes, newPalette]);
     setSelectedId(newId);
