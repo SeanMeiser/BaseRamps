@@ -1588,20 +1588,22 @@ function PaletteArea({
         )}
         <SystemRail min={min} max={max} steps={steps} curve={curve} isSelected={selectedId === 'system'} />
       </div>
-      <Palettes
-        min={min}
-        max={max}
-        steps={steps}
-        curve={curve}
-        palettes={palettes}
-        neutralPalette={neutralPalette}
-        selectedId={selectedId}
-        onSelect={onSelect}
-        onAdd={onAdd}
-        onDelete={onDelete}
-        onPaletteChange={onPaletteChange}
-        onStepSelect={onStepSelect}
-      />
+      <div className="w-full overflow-clip">
+        <Palettes
+          min={min}
+          max={max}
+          steps={steps}
+          curve={curve}
+          palettes={palettes}
+          neutralPalette={neutralPalette}
+          selectedId={selectedId}
+          onSelect={onSelect}
+          onAdd={onAdd}
+          onDelete={onDelete}
+          onPaletteChange={onPaletteChange}
+          onStepSelect={onStepSelect}
+        />
+      </div>
     </div>
   );
 }
