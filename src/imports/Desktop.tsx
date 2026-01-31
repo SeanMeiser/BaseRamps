@@ -919,28 +919,83 @@ function ExportLight() {
   );
 }
 
-function Export({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="bg-[#020202] content-stretch flex gap-[8px] items-center justify-center pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] px-[16px] relative shrink-0 cursor-pointer hover:bg-[#1a1a1a] transition-colors active:scale-[0.98] border-none"
-    >
-      <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap text-white">Export</p>
-      <ExportLight />
-    </button>
-  );
-}
+function ExportDropdown({ onExport }: { onExport: (format: 'hex' | 'oklch') => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-function ButtonGroup({ onExport }: { onExport: () => void }) {
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const handleExportClick = (format: 'hex' | 'oklch') => {
+    onExport(format);
+    setIsOpen(false);
+  };
+
   return (
-    <div className="content-stretch flex items-center justify-end relative shrink-0">
-      <GithubButton />
-      <Export onClick={onExport} />
+    <div className="relative" ref={containerRef}>
+      <div
+        className="bg-[#020202] content-stretch flex gap-[8px] items-center justify-center pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] px-[16px] relative shrink-0 cursor-pointer hover:bg-[#333] active:bg-[#000] active:scale-[0.98] transition-all"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <p className="font-['PP_Neue_Montreal:Book',sans-serif] leading-[normal] not-italic relative shrink-0 text-[12px] xl:text-[14px] 2xl:text-[16px] text-nowrap text-white">Export</p>
+        <ExportLight />
+      </div>
+
+      {isOpen && (
+        <div className="absolute top-full right-0 z-[100] bg-white border border-[#c4c4c4] shadow-lg min-w-[200px]">
+          <div
+            className="px-[16px] pt-[10px] pb-[12px] cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all border-b border-[#e6e6e6]"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleExportClick('hex');
+            }}
+          >
+            <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px]">
+              HEX.json
+            </p>
+          </div>
+          <div
+            className="px-[16px] pt-[10px] pb-[12px] cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleExportClick('oklch');
+            }}
+          >
+            <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px]">
+              OKLCH.json
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function Navigation({ onExport }: { onExport: () => void }) {
+function ButtonGroup({ onExport }: { onExport: (format: 'hex' | 'oklch') => void }) {
+  return (
+    <div className="content-stretch flex items-center justify-end relative shrink-0">
+      <GithubButton />
+      <ExportDropdown onExport={onExport} />
+    </div>
+  );
+}
+
+function Navigation({ onExport }: { onExport: (format: 'hex' | 'oklch') => void }) {
   return (
     <div className="bg-[#f5f5f5] relative shrink-0 w-full">
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_1px] border-solid inset-0 pointer-events-none" />
@@ -1574,7 +1629,7 @@ function Main({
   onDelete: (id: string) => void;
   onPaletteChange: (id: string, updates: Partial<PaletteData>) => void;
   onStepSelect?: (id: string, stepIndex: number) => void;
-  onExport: () => void;
+  onExport: (format: 'hex' | 'oklch') => void;
 }) {
   return (
     <div className="content-stretch flex flex-col flex-1 items-start relative h-screen overflow-hidden">
@@ -1745,72 +1800,79 @@ function Global() {
     handlePaletteChange(id, { lightness: oklchLightness });
   };
 
-  const getLightnesses = () => {
-    const lightnesses: number[] = [];
-    for (let i = 0; i < steps; i++) {
-      if (steps <= 1) {
-        lightnesses.push(range.max);
-      } else {
-        const x = i / (steps - 1);
-        const curveY = getCurveY(x, curve);
-        const val = range.max - (curveY * (range.max - range.min));
-        lightnesses.push(Math.round(Math.max(0, Math.min(100, val))));
-      }
-    }
-    return lightnesses;
-  };
+  const handleExport = (format: 'hex' | 'oklch') => {
+    const getLValue = (index: number) => {
+      if (steps <= 1) return range.max;
+      const x = index / (steps - 1);
+      const curveY = getCurveY(x, curve);
+      const val = range.max - (curveY * (range.max - range.min));
+      return Math.round(Math.max(0, Math.min(100, val)));
+    };
 
-  const handleExport = () => {
-    try {
-      const railLightnesses = getLightnesses();
+    const railLightnesses = Array.from({ length: steps }).map((_, i) => getLValue(i));
 
-      // Generate color data for all palettes following Design Token Community Group structure
-      const exportData: Record<string, Record<string, string>> = {};
+    // Generate colors for all palettes
+    const allPalettes = [neutralPalette, ...palettes];
+    const exportData: Record<string, any> = {};
 
-      // Add neutral palette
-      const neutralRamp = generateOklchRamp(
-        neutralPalette.hue,
-        neutralPalette.chroma,
-        neutralPalette.lightness,
+    allPalettes.forEach((palette) => {
+      const { colors } = generateOklchRamp(
+        palette.hue,
+        palette.chroma,
+        palette.lightness,
         railLightnesses
       );
-      exportData[neutralPalette.name] = {};
-      neutralRamp.colors.forEach((color, index) => {
-        const stepNumber = (index + 1) * 100;
-        exportData[neutralPalette.name][String(stepNumber)] = color;
-      });
 
-      // Add all other palettes
-      palettes.forEach((palette) => {
-        const ramp = generateOklchRamp(
-          palette.hue,
-          palette.chroma,
-          palette.lightness,
-          railLightnesses
-        );
-        exportData[palette.name] = {};
-        ramp.colors.forEach((color, index) => {
-          const stepNumber = (index + 1) * 100;
-          exportData[palette.name][String(stepNumber)] = color;
+      if (format === 'hex') {
+        // Apply opacity blending for hex format
+        const hexColors = colors.map((colorHex) => {
+          const [r, g, b] = hexToRgb(colorHex);
+          const [r2, g2, b2] = blendWithWhite(r, g, b, palette.opacity);
+          return rgbToHex(r2, g2, b2);
         });
-      });
+        exportData[palette.name] = hexColors.reduce((acc, color, i) => {
+          acc[(i + 1) * 100] = color;
+          return acc;
+        }, {} as Record<number, string>);
+      } else {
+        // OKLCH format
+        const oklchColors = colors.map((colorHex) => {
+          const oklchColor = toOklch(colorHex);
+          return {
+            l: oklchColor?.l?.toFixed(4),
+            c: oklchColor?.c?.toFixed(4),
+            h: oklchColor?.h?.toFixed(2)
+          };
+        });
+        exportData[palette.name] = oklchColors.reduce((acc, color, i) => {
+          acc[(i + 1) * 100] = `oklch(${color.l} ${color.c} ${color.h})`;
+          return acc;
+        }, {} as Record<number, string>);
+      }
+    });
 
-      // Create and download JSON file
-      const jsonString = JSON.stringify(exportData, null, 2);
-      const blob = new Blob([jsonString], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'color-ramps.json';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      toast.success('Color ramps exported successfully');
-    } catch (error) {
-      console.error('Export failed:', error);
-      toast.error('Failed to export color ramps');
-    }
+    // Create and download JSON file
+    const jsonString = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `color-palette-${format}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast("Palette exported", {
+      description: `Downloaded as ${format.toUpperCase()} format`,
+      style: {
+        backgroundColor: "#18180f",
+        color: "#ffffff",
+        border: "1px solid #333",
+        borderRadius: "8px",
+        fontFamily: "'PP_Neue_Montreal:Book', sans-serif"
+      }
+    });
   };
 
   const selectedPalette = selectedId === 'neutral' ? neutralPalette : palettes.find((p: PaletteData) => p.id === selectedId);
