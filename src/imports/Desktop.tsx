@@ -957,7 +957,7 @@ function ExportDropdown({ onExport }: { onExport: (format: 'hex' | 'oklch') => v
       </div>
 
       {isOpen && (
-        <div className="absolute top-full right-0 z-50 bg-white border border-[#c4c4c4] shadow-lg min-w-[200px]">
+        <div className="absolute top-full right-0 z-[9999] bg-white border border-[#c4c4c4] shadow-lg min-w-[200px]">
           <div
             className="px-[16px] pt-[10px] pb-[12px] cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all border-b border-[#e6e6e6]"
             onClick={(e) => {
