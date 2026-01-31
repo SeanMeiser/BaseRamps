@@ -1060,9 +1060,9 @@ function Frame4({ min, max, steps, curve }: { min: number; max: number; steps: n
   );
 }
 
-function SystemRail({ min, max, steps, curve, isSelected, isRailHovered }: { min: number; max: number; steps: number; curve: Curve; isSelected: boolean; isRailHovered: boolean }) {
+function SystemRail({ min, max, steps, curve, isSelected, isRailHovered, onMouseEnter, onMouseLeave }: { min: number; max: number; steps: number; curve: Curve; isSelected: boolean; isRailHovered: boolean; onMouseEnter?: () => void; onMouseLeave?: () => void }) {
   return (
-    <div className={`w-full cursor-pointer shrink-0 transition-all active:scale-[0.99] bg-[#f5f5f5] active:bg-[#d4d4d4] z-[51] relative`}>
+    <div className={`w-full cursor-pointer shrink-0 transition-all active:scale-[0.99] bg-[#f5f5f5] active:bg-[#d4d4d4] z-[51] relative`} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
       {/* Hover indicator - translucent version */}
       {!isSelected && isRailHovered && (
         <div
@@ -1579,10 +1579,8 @@ function PaletteArea({
       className="content-stretch flex flex-col flex-1 items-start relative w-full overflow-hidden z-[1]"
 
       onClick={(e) => { e.stopPropagation(); onSelect('system'); }}
-      onMouseEnter={() => setIsRailHovered(true)}
-      onMouseLeave={() => setIsRailHovered(false)}
     >
-      <SystemRail min={min} max={max} steps={steps} curve={curve} isSelected={selectedId === 'system'} isRailHovered={isRailHovered} />
+      <SystemRail min={min} max={max} steps={steps} curve={curve} isSelected={selectedId === 'system'} isRailHovered={isRailHovered} onMouseEnter={() => setIsRailHovered(true)} onMouseLeave={() => setIsRailHovered(false)} />
       <div className="w-full flex-1 overflow-auto">
         <Palettes
           min={min}
