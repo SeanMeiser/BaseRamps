@@ -814,6 +814,7 @@ export type PaletteData = {
   chroma: number;     // OKLCH chroma (0-0.4)
   lightness: number;  // OKLCH lightness (0-1)
   opacity: number;
+  isNameManuallySet?: boolean; // Track if name was manually edited by user
 };
 
 function getColorName(hue: number, chroma: number): string {
@@ -1775,7 +1776,8 @@ function Global() {
       hue,
       chroma,
       lightness: lastPalette?.lightness ?? 0.5,
-      opacity: lastPalette?.opacity ?? 100
+      opacity: lastPalette?.opacity ?? 100,
+      isNameManuallySet: false
     };
     setPalettes([...palettes, newPalette]);
     setSelectedId(newId);

@@ -18,6 +18,7 @@ type PaletteData = {
   chroma: number;     // OKLCH chroma (0-0.4)
   lightness: number;  // OKLCH lightness (0-1)
   opacity: number;
+  isNameManuallySet?: boolean; // Track if name was manually edited by user
 };
 
 type Curve = {
@@ -26,6 +27,25 @@ type Curve = {
   x2: number;
   y2: number;
 };
+
+function getColorName(hue: number, chroma: number): string {
+  // If chroma is very low (< 0.02), it's a neutral/grayscale
+  if (chroma < 0.02) {
+    return 'Neutral';
+  }
+
+  // Map hue to color names (0-360 degrees)
+  const hueNormalized = ((hue % 360) + 360) % 360;
+
+  if (hueNormalized < 15 || hueNormalized >= 345) return 'Red';
+  if (hueNormalized < 45) return 'Orange';
+  if (hueNormalized < 65) return 'Yellow';
+  if (hueNormalized < 150) return 'Green';
+  if (hueNormalized < 200) return 'Cyan';
+  if (hueNormalized < 260) return 'Blue';
+  if (hueNormalized < 300) return 'Purple';
+  return 'Magenta';
+}
 
 // Color conversion helpers
 function hslToHsv(h: number, s: number, l: number) {
@@ -688,18 +708,37 @@ function ControlsNewColorScale({ palette, onChange, min, max, steps, curve }: {
   steps: number;
   curve: Curve;
 }) {
-  const handleNameChange = (name: string) => onChange({ name });
-  const handleColorChange = (c: number, l: number) => onChange({ chroma: c, lightness: l });
+  const handleNameChange = (name: string) => onChange({ name, isNameManuallySet: true });
+  const handleColorChange = (c: number, l: number) => {
+    const updates: Partial<PaletteData> = { chroma: c, lightness: l };
+    // Auto-update name if not manually set
+    if (!palette.isNameManuallySet) {
+      updates.name = getColorName(palette.hue, c);
+    }
+    onChange(updates);
+  };
   const handleHueChange = (newHue: number) => {
     // When hue changes, preserve chroma if possible, or clamp to new gamut
     const maxChromaAtCurrentLightness = findMaxChroma(palette.lightness, newHue);
     const clampedChroma = Math.min(palette.chroma, maxChromaAtCurrentLightness);
-    onChange({ hue: newHue, chroma: clampedChroma });
+    const updates: Partial<PaletteData> = { hue: newHue, chroma: clampedChroma };
+    // Auto-update name if not manually set
+    if (!palette.isNameManuallySet) {
+      updates.name = getColorName(newHue, clampedChroma);
+    }
+    onChange(updates);
   };
   const handleOpacityChange = (opacity: number) => onChange({ opacity });
 
   // New handler for full color change from Hex input
-  const handleFullColorChange = (h: number, c: number, l: number) => onChange({ hue: h, chroma: c, lightness: l });
+  const handleFullColorChange = (h: number, c: number, l: number) => {
+    const updates: Partial<PaletteData> = { hue: h, chroma: c, lightness: l };
+    // Auto-update name if not manually set
+    if (!palette.isNameManuallySet) {
+      updates.name = getColorName(h, c);
+    }
+    onChange(updates);
+  };
 
   return (
     <div className="bg-[#f5f5f5] flex-1 relative w-full overflow-auto">
