@@ -13,15 +13,16 @@ export function getColorName(hue: number, chroma: number): string {
     return 'Neutral';
   }
 
-  // Map hue to color names (0-360 degrees)
+  // Map hue to color names (OKLCH hue: 0-360 degrees)
+  // Note: OKLCH hue is offset from visual hue by ~29.2°
   const hueNormalized = ((hue % 360) + 360) % 360;
 
-  if (hueNormalized < 15 || hueNormalized >= 345) return 'Red';
-  if (hueNormalized < 60) return 'Orange';
-  if (hueNormalized < 75) return 'Yellow';
-  if (hueNormalized < 150) return 'Green';
-  if (hueNormalized < 200) return 'Cyan';
-  if (hueNormalized < 260) return 'Blue';
-  if (hueNormalized < 300) return 'Purple';
+  if (hueNormalized < 45 || hueNormalized >= 345) return 'Red';
+  if (hueNormalized < 75) return 'Orange';
+  if (hueNormalized < 105) return 'Yellow';
+  if (hueNormalized < 165) return 'Green';
+  if (hueNormalized < 195) return 'Cyan';
+  if (hueNormalized < 255) return 'Blue';
+  if (hueNormalized < 315) return 'Purple';
   return 'Magenta';
 }
