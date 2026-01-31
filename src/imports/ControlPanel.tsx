@@ -10,6 +10,7 @@ import { generateOklchRamp } from './color-engine';
 const toOklch = converter('oklch');
 
 import { findMaxChroma, isDisplayable } from '../lib/gamut/oklchGamut';
+import { getColorName } from './colorNaming';
 
 type PaletteData = {
   id: string;
@@ -27,25 +28,6 @@ type Curve = {
   x2: number;
   y2: number;
 };
-
-function getColorName(hue: number, chroma: number): string {
-  // If chroma is very low (< 0.02), it's a neutral/grayscale
-  if (chroma < 0.02) {
-    return 'Neutral';
-  }
-
-  // Map hue to color names (0-360 degrees)
-  const hueNormalized = ((hue % 360) + 360) % 360;
-
-  if (hueNormalized < 15 || hueNormalized >= 345) return 'Red';
-  if (hueNormalized < 45) return 'Orange';
-  if (hueNormalized < 65) return 'Yellow';
-  if (hueNormalized < 150) return 'Green';
-  if (hueNormalized < 200) return 'Cyan';
-  if (hueNormalized < 260) return 'Blue';
-  if (hueNormalized < 300) return 'Purple';
-  return 'Magenta';
-}
 
 // Color conversion helpers
 function hslToHsv(h: number, s: number, l: number) {

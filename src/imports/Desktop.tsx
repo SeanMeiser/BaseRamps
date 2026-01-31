@@ -806,6 +806,7 @@ function ControlsSystem({ min, max, steps, curve, onRangeChange, onStepsChange, 
 }
 
 import RampControlPanel from "./ControlPanel";
+import { getColorName } from "./colorNaming";
 
 export type PaletteData = {
   id: string;
@@ -816,25 +817,6 @@ export type PaletteData = {
   opacity: number;
   isNameManuallySet?: boolean; // Track if name was manually edited by user
 };
-
-function getColorName(hue: number, chroma: number): string {
-  // If chroma is very low (< 0.02), it's a neutral/grayscale
-  if (chroma < 0.02) {
-    return 'Neutral';
-  }
-
-  // Map hue to color names (0-360 degrees)
-  const hueNormalized = ((hue % 360) + 360) % 360;
-
-  if (hueNormalized < 15 || hueNormalized >= 345) return 'Red';
-  if (hueNormalized < 45) return 'Orange';
-  if (hueNormalized < 65) return 'Yellow';
-  if (hueNormalized < 150) return 'Green';
-  if (hueNormalized < 200) return 'Cyan';
-  if (hueNormalized < 260) return 'Blue';
-  if (hueNormalized < 300) return 'Purple';
-  return 'Magenta';
-}
 
 function CreatorSignature() {
   return (
