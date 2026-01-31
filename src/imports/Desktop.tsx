@@ -1060,9 +1060,37 @@ function Frame4({ min, max, steps, curve }: { min: number; max: number; steps: n
   );
 }
 
-function SystemRail({ min, max, steps, curve, isSelected }: { min: number; max: number; steps: number; curve: Curve; isSelected: boolean }) {
+function SystemRail({ min, max, steps, curve, isSelected, isRailHovered }: { min: number; max: number; steps: number; curve: Curve; isSelected: boolean; isRailHovered: boolean }) {
   return (
-    <div className={`shrink-0 w-full bg-[#f5f5f5]`}>
+    <div className={`w-full cursor-pointer shrink-0 transition-all active:scale-[0.99] bg-[#f5f5f5] active:bg-[#d4d4d4] z-[51] relative`}>
+      {/* Hover indicator - translucent version */}
+      {!isSelected && isRailHovered && (
+        <div
+          className="absolute transition-opacity"
+          style={{
+            left: '0px',
+            top: '8px',
+            bottom: '8px',
+            width: '4px',
+            backgroundColor: 'rgba(0, 0, 0, 0.2)',
+            borderRadius: '0 9999px 9999px 0',
+            zIndex: 50
+          }}
+        />
+      )}
+      {/* Selected indicator - solid version */}
+      {isSelected && (
+        <div style={{
+          position: 'absolute',
+          left: '0px',
+          top: '8px',
+          bottom: '8px',
+          width: '4px',
+          backgroundColor: '#000',
+          borderRadius: '0 9999px 9999px 0',
+          zIndex: 50
+        }} />
+      )}
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_1px] border-solid inset-0 pointer-events-none" />
       <div className="flex flex-col justify-center size-full">
         <div className="content-stretch flex flex-col items-start justify-center px-[24px] py-[8px] relative w-full">
@@ -1550,44 +1578,11 @@ function PaletteArea({
     <div
       className="content-stretch flex flex-col flex-1 items-start relative w-full overflow-hidden z-[1]"
 
-      onClick={() => onSelect('system')}
+      onClick={(e) => { e.stopPropagation(); onSelect('system'); }}
+      onMouseEnter={() => setIsRailHovered(true)}
+      onMouseLeave={() => setIsRailHovered(false)}
     >
-      <div
-        onClick={(e) => { e.stopPropagation(); onSelect('system'); }}
-        onMouseEnter={() => setIsRailHovered(true)}
-        onMouseLeave={() => setIsRailHovered(false)}
-        className={`w-full cursor-pointer shrink-0 transition-all active:scale-[0.99] bg-[#f5f5f5] active:bg-[#d4d4d4] z-[51]`}
-      >
-        {/* Hover indicator - translucent version */}
-        {selectedId !== 'system' && isRailHovered && (
-          <div
-            className="absolute transition-opacity"
-            style={{
-              left: '0px',
-              top: '8px',
-              height: 'calc(100% - 16px)',
-              width: '4px',
-              backgroundColor: 'rgba(0, 0, 0, 0.2)',
-              borderRadius: '0 9999px 9999px 0',
-              zIndex: 50
-            }}
-          />
-        )}
-        {/* Selected indicator - solid version */}
-        {selectedId === 'system' && (
-          <div style={{
-            position: 'absolute',
-            left: '0px',
-            top: '8px',
-            height: 'calc(100% - 16px)',
-            width: '4px',
-            backgroundColor: '#000',
-            borderRadius: '0 9999px 9999px 0',
-            zIndex: 50
-          }} />
-        )}
-        <SystemRail min={min} max={max} steps={steps} curve={curve} isSelected={selectedId === 'system'} />
-      </div>
+      <SystemRail min={min} max={max} steps={steps} curve={curve} isSelected={selectedId === 'system'} isRailHovered={isRailHovered} />
       <div className="w-full flex-1 overflow-auto">
         <Palettes
           min={min}
