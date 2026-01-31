@@ -1556,7 +1556,7 @@ function PaletteArea({
         onClick={(e) => { e.stopPropagation(); onSelect('system'); }}
         onMouseEnter={() => setIsRailHovered(true)}
         onMouseLeave={() => setIsRailHovered(false)}
-        className={`w-full cursor-pointer sticky top-0 transition-all active:scale-[0.99] bg-[#f5f5f5] active:bg-[#d4d4d4]`}
+        className={`w-full cursor-pointer sticky top-0 transition-all active:scale-[0.99] bg-[#f5f5f5] active:bg-[#d4d4d4] z-[51]`}
       >
         {/* Hover indicator - translucent version */}
         {selectedId !== 'system' && isRailHovered && (
