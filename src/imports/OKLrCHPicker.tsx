@@ -205,7 +205,12 @@ export default function OKLrCHPicker({ hue, lightness, chroma, railLightnesses, 
         if (rampColors && rampColors.length === railLightnesses.length) {
             rampColors.forEach((colorHex, index) => {
                 // Convert hex to OKLCH to get chroma and lightness
-                const rgbMatch = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(colorHex);
+                // Support both full (#RRGGBB) and shorthand (#RGB) hex notation
+                let hex = colorHex.replace(/^#?/, '');
+                if (hex.length === 3) {
+                    hex = hex.split('').map(c => c + c).join('');
+                }
+                const rgbMatch = /^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
                 if (rgbMatch) {
                     const r = parseInt(rgbMatch[1], 16) / 255;
                     const g = parseInt(rgbMatch[2], 16) / 255;
