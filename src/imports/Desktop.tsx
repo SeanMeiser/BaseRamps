@@ -1548,15 +1548,15 @@ function PaletteArea({
 
   return (
     <div
-      className="content-stretch flex flex-col flex-1 items-start relative w-full overflow-auto z-[1]"
-     
+      className="content-stretch flex flex-col flex-1 items-start relative w-full overflow-hidden z-[1]"
+
       onClick={() => onSelect('system')}
     >
       <div
         onClick={(e) => { e.stopPropagation(); onSelect('system'); }}
         onMouseEnter={() => setIsRailHovered(true)}
         onMouseLeave={() => setIsRailHovered(false)}
-        className={`w-full cursor-pointer sticky top-0 transition-all active:scale-[0.99] bg-[#f5f5f5] active:bg-[#d4d4d4] z-[51]`}
+        className={`w-full cursor-pointer shrink-0 transition-all active:scale-[0.99] bg-[#f5f5f5] active:bg-[#d4d4d4] z-[51]`}
       >
         {/* Hover indicator - translucent version */}
         {selectedId !== 'system' && isRailHovered && (
@@ -1588,7 +1588,7 @@ function PaletteArea({
         )}
         <SystemRail min={min} max={max} steps={steps} curve={curve} isSelected={selectedId === 'system'} />
       </div>
-      <div className="w-full overflow-clip">
+      <div className="w-full flex-1 overflow-auto">
         <Palettes
           min={min}
           max={max}
