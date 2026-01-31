@@ -966,7 +966,7 @@ function ExportDropdown({ onExport }: { onExport: (format: 'hex' | 'oklch') => v
             }}
           >
             <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px]">
-              Download .json (HEX)
+              HEX.json
             </p>
           </div>
           <div
@@ -977,7 +977,7 @@ function ExportDropdown({ onExport }: { onExport: (format: 'hex' | 'oklch') => v
             }}
           >
             <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px]">
-              Download .json (OKLCH)
+              OKLCH.json
             </p>
           </div>
         </div>
