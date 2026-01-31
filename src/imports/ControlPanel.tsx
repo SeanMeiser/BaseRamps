@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { ArrowUpRight } from "lucide-react";
 import svgPaths from "./svg-6ygof4qbak";
 import svgPathsK from "./svg-kkxrrzwln3";
@@ -217,6 +217,12 @@ function ColorPicker({ hue, chroma, lightness, onChange, min, max, steps, curve 
     onChange(c, l);
   };
 
+  // Generate the ramp colors to show as dots on the picker
+  const { colors: rampColors } = useMemo(
+    () => generateOklchRamp(currentOklchHue, currentChroma, currentLightness, railLightnesses),
+    [currentOklchHue, currentChroma, currentLightness, railLightnesses]
+  );
+
   return (
     <div className="bg-white relative shrink-0 w-full aspect-square select-none touch-none">
       <OKLrCHPicker
@@ -225,6 +231,7 @@ function ColorPicker({ hue, chroma, lightness, onChange, min, max, steps, curve 
         chroma={currentChroma}
         railLightnesses={railLightnesses}
         onChange={handleOklchChange}
+        rampColors={rampColors}
       />
     </div>
   );
