@@ -816,6 +816,25 @@ export type PaletteData = {
   opacity: number;
 };
 
+function getColorName(hue: number, chroma: number): string {
+  // If chroma is very low (< 0.02), it's a neutral/grayscale
+  if (chroma < 0.02) {
+    return 'Neutral';
+  }
+
+  // Map hue to color names (0-360 degrees)
+  const hueNormalized = ((hue % 360) + 360) % 360;
+
+  if (hueNormalized < 15 || hueNormalized >= 345) return 'Red';
+  if (hueNormalized < 45) return 'Orange';
+  if (hueNormalized < 65) return 'Yellow';
+  if (hueNormalized < 150) return 'Green';
+  if (hueNormalized < 200) return 'Cyan';
+  if (hueNormalized < 260) return 'Blue';
+  if (hueNormalized < 300) return 'Purple';
+  return 'Magenta';
+}
+
 function CreatorSignature() {
   return (
     <div className="mt-auto relative w-full">
@@ -1747,11 +1766,14 @@ function Global() {
     const newId = `palette-${Date.now()}`;
     const lastPalette = palettes[palettes.length - 1];
 
+    const hue = lastPalette?.hue ?? 0;
+    const chroma = lastPalette?.chroma ?? 0.1;
+
     const newPalette: PaletteData = {
       id: newId,
-      name: "New Ramp",
-      hue: lastPalette?.hue ?? 0,
-      chroma: lastPalette?.chroma ?? 0.1,
+      name: getColorName(hue, chroma),
+      hue,
+      chroma,
       lightness: lastPalette?.lightness ?? 0.5,
       opacity: lastPalette?.opacity ?? 100
     };
