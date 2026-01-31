@@ -1478,7 +1478,7 @@ function Palettes({
   onStepSelect?: (id: string, stepIndex: number) => void;
 }) {
   return (
-    <div className="content-stretch flex flex-col items-start px-0 pb-[8px] relative shrink-0 w-full">
+    <div className="content-stretch flex flex-col items-start px-0 pb-[8px] relative shrink-0 w-full z-0">
       <Neutral
         min={min}
         max={max}
