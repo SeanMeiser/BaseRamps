@@ -1565,7 +1565,7 @@ function PaletteArea({
             style={{
               left: '0px',
               top: '8px',
-              bottom: '8px',
+              height: 'calc(100% - 16px)',
               width: '4px',
               backgroundColor: 'rgba(0, 0, 0, 0.2)',
               borderRadius: '0 9999px 9999px 0',
@@ -1579,7 +1579,7 @@ function PaletteArea({
             position: 'absolute',
             left: '0px',
             top: '8px',
-            bottom: '8px',
+            height: 'calc(100% - 16px)',
             width: '4px',
             backgroundColor: '#000',
             borderRadius: '0 9999px 9999px 0',
