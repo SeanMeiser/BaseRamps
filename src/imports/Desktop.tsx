@@ -1,6 +1,6 @@
 import svgPaths from "./svg-jpfemsx01m";
 import clsx from "clsx";
-import { Copy, Check, Github, ArrowUpRight } from 'lucide-react';
+import { Copy, Check, Github, ArrowUpRight, Download } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Toaster, toast } from "sonner";
 import { findMaxChroma } from '../lib/gamut/oklchGamut';
@@ -947,7 +947,7 @@ function ExportDropdown({ onExport }: { onExport: (format: 'hex' | 'oklch') => v
   };
 
   return (
-    <div className="relative" ref={containerRef}>
+    <div className="relative z-50" ref={containerRef}>
       <div
         className="bg-[#020202] content-stretch flex gap-[8px] items-center justify-center pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] px-[16px] relative shrink-0 cursor-pointer hover:bg-[#333] active:bg-[#000] active:scale-[0.98] transition-all"
         onClick={() => setIsOpen(!isOpen)}
@@ -957,28 +957,30 @@ function ExportDropdown({ onExport }: { onExport: (format: 'hex' | 'oklch') => v
       </div>
 
       {isOpen && (
-        <div className="absolute top-full right-0 z-[100] bg-white border border-[#c4c4c4] shadow-lg min-w-[200px]">
+        <div className="absolute right-0 z-[200] bg-white border border-[#c4c4c4] shadow-lg w-max" style={{ top: 'calc(100% - 1px)' }}>
           <div
-            className="px-[16px] pt-[10px] pb-[12px] cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all border-b border-[#e6e6e6]"
+            className="px-[24px] pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] flex items-center gap-[16px] cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all border-b border-[#e6e6e6]"
             onClick={(e) => {
               e.stopPropagation();
               handleExportClick('hex');
             }}
           >
-            <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px]">
+            <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px] whitespace-nowrap">
               HEX.json
             </p>
+            <Download size={16} className="text-[#7a7a7a] shrink-0" />
           </div>
           <div
-            className="px-[16px] pt-[10px] pb-[12px] cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all"
+            className="px-[24px] pb-[10px] pt-[8px] xl:pb-[13px] xl:pt-[10px] 2xl:pb-[16px] 2xl:pt-[12px] flex items-center gap-[16px] cursor-pointer hover:bg-[#e6e6e6] active:bg-[#d4d4d4] active:scale-[0.98] transition-all"
             onClick={(e) => {
               e.stopPropagation();
               handleExportClick('oklch');
             }}
           >
-            <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px]">
+            <p className="font-['PP_Neue_Montreal:Book',sans-serif] text-[#18180f] text-[12px] xl:text-[14px] 2xl:text-[16px] whitespace-nowrap">
               OKLCH.json
             </p>
+            <Download size={16} className="text-[#7a7a7a] shrink-0" />
           </div>
         </div>
       )}
@@ -997,7 +999,7 @@ function ButtonGroup({ onExport }: { onExport: (format: 'hex' | 'oklch') => void
 
 function Navigation({ onExport }: { onExport: (format: 'hex' | 'oklch') => void }) {
   return (
-    <div className="bg-[#f5f5f5] relative shrink-0 w-full">
+    <div className="bg-[#f5f5f5] relative shrink-0 w-full z-[100]">
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_1px] border-solid inset-0 pointer-events-none" />
       <div className="flex flex-row items-center w-full">
         <div className="content-stretch flex items-center justify-between pl-[24px] pr-0 py-0 relative w-full">
@@ -1058,7 +1060,7 @@ function Frame4({ min, max, steps, curve }: { min: number; max: number; steps: n
 
 function SystemRail({ min, max, steps, curve, isSelected }: { min: number; max: number; steps: number; curve: Curve; isSelected: boolean }) {
   return (
-    <div className={`sticky top-0 z-50 relative shrink-0 w-full bg-transparent`}>
+    <div className={`sticky top-0 shrink-0 w-full bg-transparent`}>
       <div aria-hidden="true" className="absolute border-[#c4c4c4] border-[0px_0px_1px] border-solid inset-0 pointer-events-none" />
       <div className="flex flex-col justify-center size-full">
         <div className="content-stretch flex flex-col items-start justify-center px-[24px] py-[8px] relative w-full">
@@ -1544,7 +1546,7 @@ function PaletteArea({
 
   return (
     <div
-      className="content-stretch flex flex-col flex-1 items-start relative w-full overflow-auto"
+      className="content-stretch flex flex-col flex-1 items-start relative w-full overflow-auto z-[1]"
      
       onClick={() => onSelect('system')}
     >
@@ -1552,7 +1554,7 @@ function PaletteArea({
         onClick={(e) => { e.stopPropagation(); onSelect('system'); }}
         onMouseEnter={() => setIsRailHovered(true)}
         onMouseLeave={() => setIsRailHovered(false)}
-        className={`w-full cursor-pointer sticky top-0 z-50 transition-all active:scale-[0.99] bg-[#f5f5f5] active:bg-[#d4d4d4]`}
+        className={`w-full cursor-pointer sticky top-0 transition-all active:scale-[0.99] bg-[#f5f5f5] active:bg-[#d4d4d4]`}
       >
         {/* Hover indicator - translucent version */}
         {selectedId !== 'system' && isRailHovered && (
