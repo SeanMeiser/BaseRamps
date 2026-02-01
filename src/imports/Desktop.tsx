@@ -1816,7 +1816,7 @@ function Global() {
 
     // Generate colors for all palettes
     const allPalettes = [neutralPalette, ...palettes];
-    const exportData: Record<string, any> = {};
+    const colorTokens: Record<string, Record<string, any>> = {};
 
     allPalettes.forEach((palette) => {
       const { colors } = generateOklchRamp(
@@ -1826,6 +1826,9 @@ function Global() {
         railLightnesses
       );
 
+      const paletteKey = palette.name.toLowerCase().replace(/\s+/g, '-');
+      colorTokens[paletteKey] = {};
+
       if (format === 'hex') {
         // Apply opacity blending for hex format
         const hexColors = colors.map((colorHex) => {
@@ -1833,10 +1836,14 @@ function Global() {
           const [r2, g2, b2] = blendWithWhite(r, g, b, palette.opacity);
           return rgbToHex(r2, g2, b2);
         });
-        exportData[palette.name] = hexColors.reduce((acc, color, i) => {
-          acc[(i + 1) * 100] = color;
-          return acc;
-        }, {} as Record<number, string>);
+        hexColors.forEach((color, i) => {
+          const step = (i + 1) * 100;
+          colorTokens[paletteKey][step] = {
+            $value: color,
+            $type: 'color',
+            $description: `${palette.name} color at step ${step}`
+          };
+        });
       } else {
         // OKLCH format
         const oklchColors = colors.map((colorHex) => {
@@ -1847,12 +1854,21 @@ function Global() {
             h: oklchColor?.h?.toFixed(2)
           };
         });
-        exportData[palette.name] = oklchColors.reduce((acc, color, i) => {
-          acc[(i + 1) * 100] = `oklch(${color.l} ${color.c} ${color.h})`;
-          return acc;
-        }, {} as Record<number, string>);
+        oklchColors.forEach((color, i) => {
+          const step = (i + 1) * 100;
+          colorTokens[paletteKey][step] = {
+            $value: `oklch(${color.l} ${color.c} ${color.h})`,
+            $type: 'color',
+            $description: `${palette.name} color at step ${step}`
+          };
+        });
       }
     });
+
+    // Create DesignTokenStudio compliant structure
+    const exportData = {
+      color: colorTokens
+    };
 
     // Create and download JSON file
     const jsonString = JSON.stringify(exportData, null, 2);
